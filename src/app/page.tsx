@@ -71,14 +71,7 @@ export default function Home() {
         {/* Brand Promise Section */}
         <section className="py-12 border-t">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="flex flex-col items-center text-center p-6 bg-white rounded-xl border">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <div className="w-6 h-6 bg-primary rounded-full" />
-                </div>
-                <h3 className="font-bold text-lg mb-2">Livraison Partout au Maroc</h3>
-                <p className="text-sm text-muted-foreground">Recevez vos produits à domicile en 24h à 48h dans toutes les villes.</p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="flex flex-col items-center text-center p-6 bg-white rounded-xl border">
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <div className="w-6 h-6 bg-primary rounded-full" />
