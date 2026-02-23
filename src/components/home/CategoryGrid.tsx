@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from 'next/link';
@@ -8,29 +7,31 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export function CategoryGrid() {
   return (
-    <section className="py-8">
+    <section className="py-8 bg-white">
       <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-6">Nos Catégories</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        <h2 className="text-xl font-medium mb-12 text-center md:text-left">Découvrir nos catégories</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-12">
           {categories.map((cat) => {
             const placeholder = PlaceHolderImages.find(img => img.id === cat.iconId);
             return (
               <Link 
                 key={cat.id} 
                 href={`/category/${cat.slug}`}
-                className="flex flex-col items-center p-4 bg-white rounded-2xl border hover:border-primary hover:shadow-md transition-all group"
+                className="flex flex-col items-center group"
               >
-                <div className="relative w-16 h-16 mb-3 rounded-full overflow-hidden bg-muted group-hover:scale-110 transition-transform">
+                <div className="relative w-32 h-32 mb-4 transition-transform group-hover:scale-105">
                   {placeholder && (
                     <Image
                       src={placeholder.imageUrl}
                       alt={cat.name}
                       fill
-                      className="object-cover"
+                      className="object-contain"
                     />
                   )}
                 </div>
-                <span className="text-xs font-semibold text-center leading-tight">{cat.name}</span>
+                <span className="text-sm font-medium text-center text-gray-700 leading-tight px-2 group-hover:text-primary transition-colors">
+                  {cat.name}
+                </span>
               </Link>
             );
           })}
