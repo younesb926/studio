@@ -1,29 +1,41 @@
+
 "use client"
 
 import { Header } from '@/components/layout/Header';
 import { CategoryGrid } from '@/components/home/CategoryGrid';
 import { ProductCard } from '@/components/product/ProductCard';
-import { products } from '@/lib/data';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ChevronRight, Zap, ShoppingCart } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, query, where, limit } from 'firebase/firestore';
+import { useMemo } from 'react';
+import { Product } from '@/lib/types';
 
 export default function Home() {
+  const db = useFirestore();
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-promo');
-  const featured = products.filter(p => p.isFeatured);
+
+  // Fetch featured products from Firestore
+  const featuredQuery = useMemo(() => {
+    if (!db) return null;
+    return query(collection(db, 'products'), limit(10));
+  }, [db]);
+
+  const { data: productsData, loading } = useCollection(featuredQuery);
+  const products = (productsData || []) as unknown as Product[];
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f5f5]">
       <Header />
       
       <main className="flex-1">
-        {/* Hero Section - ElectroMall Style */}
+        {/* Hero Section */}
         <section className="bg-white">
           <div className="container mx-auto px-0 md:px-4 py-0 md:py-4">
-            <div className="relative w-full aspect-[2.5/1] overflow-hidden">
+            <div className="relative w-full aspect-[2.5/1] overflow-hidden rounded-none md:rounded-xl">
               {heroImage && (
                 <Image
                   src={heroImage.imageUrl}
@@ -61,16 +73,29 @@ export default function Home() {
                 </Button>
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {featured.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            
+            {loading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {Array(5).fill(0).map((_, i) => (
+                  <div key={i} className="aspect-[3/4] bg-muted animate-pulse rounded-xl" />
+                ))}
+              </div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                لا توجد منتجات حالياً. أضف منتجات من لوحة التحكم.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
           </div>
         </section>
       </main>
 
-      {/* Floating Support Button - ElectroMall Style */}
+      {/* WhatsApp Button */}
       <a 
         href="https://wa.me/2126XXXXXXXX" 
         target="_blank" 

@@ -24,7 +24,10 @@ export function ProductCard({ product }: ProductCardProps) {
     setIsMounted(true);
   }, []);
 
-  const placeholder = PlaceHolderImages.find(img => img.id === product.imageId);
+  // Use product image if available, else fallback to placeholders
+  const imageUrl = product.imageUrl || 
+    (PlaceHolderImages.find(img => img.id === product.imageId)?.imageUrl) ||
+    'https://picsum.photos/seed/default/500/500';
 
   const discount = product.originalPrice 
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -46,15 +49,12 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link href={`/product/${product.id}`} className="group bg-white rounded-xl border overflow-hidden hover:shadow-2xl transition-all duration-500 flex flex-col h-full relative">
       <div className="relative aspect-square overflow-hidden bg-muted m-2 rounded-lg">
-        {placeholder && (
-          <Image
-            src={placeholder.imageUrl}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-110 transition-transform duration-700"
-            data-ai-hint={placeholder.imageHint}
-          />
-        )}
+        <Image
+          src={imageUrl}
+          alt={product.name}
+          fill
+          className="object-cover group-hover:scale-110 transition-transform duration-700"
+        />
         
         {/* Badges Overlay */}
         <div className="absolute top-2 left-2 flex flex-col gap-2">
