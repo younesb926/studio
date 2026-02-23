@@ -1,0 +1,29 @@
+
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Electronic products sold in the store",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "اسم المنتج" },
+        "description": { "type": "string", "description": "وصف المنتج" },
+        "price": { "type": "number", "description": "ثمن المنتج" },
+        "categoryId": { "type": "string", "description": "معرف الفئة" },
+        "imageUrl": { "type": "string", "description": "رابط الصورة" },
+        "stock": { "type": "number", "description": "الكمية المتوفرة" },
+        "isFeatured": { "type": "boolean", "description": "منتج مميز" }
+      },
+      "required": ["name", "description", "price", "categoryId"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com"]
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": { "$ref": "#/backend/entities/Product" },
+      "description": "قائمة المنتجات المعروضة في المتجر"
+    }
+  }
+}

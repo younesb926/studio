@@ -1,3 +1,4 @@
+
 import { Category, Product } from './types';
 
 export const categories: Category[] = [
@@ -11,18 +12,7 @@ export const categories: Category[] = [
 
 export const products: Product[] = [
   {
-    id: 'p2',
-    name: 'MacBook Air 13" M3 8GB 256GB',
-    slug: 'macbook-air-m3',
-    description: 'La puissance de la puce M3 dans un design ultra-fin et léger.',
-    price: 12900,
-    categoryId: '3',
-    imageId: 'prod-2',
-    stock: 5,
-    isFeatured: true
-  },
-  {
-    id: 'p3',
+    id: 'p1',
     name: 'Samsung TV 65" QLED 4K Smart',
     slug: 'samsung-qled-65',
     description: 'Une qualité d\'image exceptionnelle with des couleurs éclatantes.',
@@ -34,7 +24,7 @@ export const products: Product[] = [
     isFeatured: true
   },
   {
-    id: 'p4',
+    id: 'p2',
     name: 'Nespresso Vertuo Pop Black',
     slug: 'nespresso-vertuo-pop',
     description: 'Le café parfait en une seule touche, design moderne et compact.',
@@ -46,7 +36,7 @@ export const products: Product[] = [
     isFeatured: true
   },
   {
-    id: 'p5',
+    id: 'p3',
     name: 'LG InstaView Door-in-Door 635L',
     slug: 'lg-instaview-fridge',
     description: 'Toquez deux fois et voyez l\'intérieur sans ouvrir la porte.',
@@ -57,7 +47,7 @@ export const products: Product[] = [
     isFeatured: true
   },
   {
-    id: 'p6',
+    id: 'p4',
     name: 'Climatiseur Samsung WindFree 12K',
     slug: 'samsung-windfree-12k',
     description: 'Rafraîchissement sans courants d\'air froids désagréables.',
