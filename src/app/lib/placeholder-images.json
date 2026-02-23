@@ -4,73 +4,73 @@
     {
       "id": "cat-petit-electro",
       "description": "Petit électroménager",
-      "imageUrl": "https://picsum.photos/seed/kitchen/400/400",
-      "imageHint": "coffee machine blender"
+      "imageUrl": "https://picsum.photos/seed/mixer/400/400",
+      "imageHint": "kitchen blender"
     },
     {
       "id": "cat-gros-electro",
       "description": "Gros électroménager",
-      "imageUrl": "https://picsum.photos/seed/appliances-modern/400/400",
-      "imageHint": "refrigerator washing-machine"
+      "imageUrl": "https://picsum.photos/seed/fridge/400/400",
+      "imageHint": "modern refrigerator"
     },
     {
       "id": "cat-informatique",
       "description": "Informatique",
-      "imageUrl": "https://picsum.photos/seed/laptop/400/400",
+      "imageUrl": "https://picsum.photos/seed/laptop-pro/400/400",
       "imageHint": "laptop computer"
     },
     {
       "id": "cat-televisions",
       "description": "Télévisions",
-      "imageUrl": "https://picsum.photos/seed/tv/400/400",
-      "imageHint": "smart television 4k"
+      "imageUrl": "https://picsum.photos/seed/smart-tv/400/400",
+      "imageHint": "oled television"
     },
     {
       "id": "cat-climatiseurs",
       "description": "Climatiseurs",
-      "imageUrl": "https://picsum.photos/seed/ac/400/400",
+      "imageUrl": "https://picsum.photos/seed/aircon/400/400",
       "imageHint": "air conditioner"
     },
     {
       "id": "cat-chauffe-eau",
       "description": "Chauffe-eau",
-      "imageUrl": "https://picsum.photos/seed/water-heater/400/400",
+      "imageUrl": "https://picsum.photos/seed/heater/400/400",
       "imageHint": "water heater"
     },
     {
       "id": "hero-promo",
       "description": "Offre Exceptionnelle",
-      "imageUrl": "https://picsum.photos/seed/promo/1200/600",
-      "imageHint": "electronics sale banner"
+      "imageUrl": "https://picsum.photos/seed/tech-sale/1200/600",
+      "imageHint": "electronics banner"
     },
     {
       "id": "prod-2",
       "description": "MacBook Air M3",
-      "imageUrl": "https://picsum.photos/seed/macbook/500/500",
-      "imageHint": "apple laptop"
+      "imageUrl": "https://picsum.photos/seed/apple-mac/500/500",
+      "imageHint": "silver laptop"
     },
     {
       "id": "prod-3",
       "description": "TV Samsung QLED 65",
-      "imageUrl": "https://picsum.photos/seed/samsung-tv/500/500",
-      "imageHint": "samsung television"
+      "imageUrl": "https://picsum.photos/seed/samsung-led/500/500",
+      "imageHint": "big television"
     },
     {
       "id": "prod-4",
       "description": "Machine à Café Nespresso",
-      "imageUrl": "https://picsum.photos/seed/coffee/500/500",
+      "imageUrl": "https://picsum.photos/seed/coffee-pod/500/500",
       "imageHint": "coffee machine"
     },
     {
       "id": "prod-5",
       "description": "Réfrigérateur LG InstaView",
-      "imageUrl": "https://picsum.photos/seed/lg-fridge/500/500",
-      "imageHint": "modern refrigerator"
+      "imageUrl": "https://picsum.photos/seed/lg-refrigerator/500/500",
+      "imageHint": "large fridge"
     },
     {
       "id": "prod-6",
       "description": "Climatiseur Split 12000 BTU",
-      "imageUrl": "https://picsum.photos/seed/split-ac/500/500",
+      "imageUrl": "https://picsum.photos/seed/ac-unit/500/500",
       "imageHint": "split airconditioner"
     }
   ]
