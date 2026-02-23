@@ -10,8 +10,8 @@
     {
       "id": "cat-gros-electro",
       "description": "Gros électroménager",
-      "imageUrl": "https://picsum.photos/seed/fridge/400/400",
-      "imageHint": "refrigerator washing machine"
+      "imageUrl": "https://picsum.photos/seed/appliances-modern/400/400",
+      "imageHint": "refrigerator washing-machine"
     },
     {
       "id": "cat-informatique",
