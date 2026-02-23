@@ -1,0 +1,89 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "cat-petit-electro",
+      "description": "Petit électroménager",
+      "imageUrl": "https://picsum.photos/seed/p1/400/400",
+      "imageHint": "coffee machine"
+    },
+    {
+      "id": "cat-gros-electro",
+      "description": "Gros électroménager",
+      "imageUrl": "https://picsum.photos/seed/p2/400/400",
+      "imageHint": "refrigerator fridge"
+    },
+    {
+      "id": "cat-informatique",
+      "description": "Informatique",
+      "imageUrl": "https://picsum.photos/seed/p3/400/400",
+      "imageHint": "laptop computer"
+    },
+    {
+      "id": "cat-televisions",
+      "description": "Télévisions",
+      "imageUrl": "https://picsum.photos/seed/p4/400/400",
+      "imageHint": "smart tv"
+    },
+    {
+      "id": "cat-climatiseurs",
+      "description": "Climatiseurs",
+      "imageUrl": "https://picsum.photos/seed/p5/400/400",
+      "imageHint": "air conditioner"
+    },
+    {
+      "id": "cat-chauffe-eau",
+      "description": "Chauffe-eau",
+      "imageUrl": "https://picsum.photos/seed/p6/400/400",
+      "imageHint": "water heater"
+    },
+    {
+      "id": "cat-telephones",
+      "description": "Téléphones & Tablettes",
+      "imageUrl": "https://picsum.photos/seed/p7/400/400",
+      "imageHint": "smartphone tablet"
+    },
+    {
+      "id": "hero-promo",
+      "description": "Offre Exceptionnelle",
+      "imageUrl": "https://picsum.photos/seed/p8/1200/600",
+      "imageHint": "modern electronics"
+    },
+    {
+      "id": "prod-1",
+      "description": "Smartphone Galaxy S24 Ultra",
+      "imageUrl": "https://picsum.photos/seed/s1/500/500",
+      "imageHint": "smartphone mobile"
+    },
+    {
+      "id": "prod-2",
+      "description": "MacBook Air M3",
+      "imageUrl": "https://picsum.photos/seed/s2/500/500",
+      "imageHint": "laptop computer"
+    },
+    {
+      "id": "prod-3",
+      "description": "TV Samsung QLED 65",
+      "imageUrl": "https://picsum.photos/seed/s3/500/500",
+      "imageHint": "television screen"
+    },
+    {
+      "id": "prod-4",
+      "description": "Machine à Café Nespresso",
+      "imageUrl": "https://picsum.photos/seed/s4/500/500",
+      "imageHint": "coffee maker"
+    },
+    {
+      "id": "prod-5",
+      "description": "Réfrigérateur LG InstaView",
+      "imageUrl": "https://picsum.photos/seed/s5/500/500",
+      "imageHint": "refrigerator fridge"
+    },
+    {
+      "id": "prod-6",
+      "description": "Climatiseur Split 12000 BTU",
+      "imageUrl": "https://picsum.photos/seed/s6/500/500",
+      "imageHint": "air conditioner"
+    }
+  ]
+}
