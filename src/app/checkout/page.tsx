@@ -1,26 +1,31 @@
 
 "use client"
 
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
+import { Separator } from '@/components/ui/separator';
 
 export default function CheckoutPage() {
   const { total, clearCart, items } = useCart();
   const router = useRouter();
   const [step, setStep] = useState<'form' | 'success'>('form');
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate order processing
     toast({
       title: "Commande enregistrée",
       description: "Votre commande a été reçue avec succès.",
@@ -28,6 +33,8 @@ export default function CheckoutPage() {
     setStep('success');
     clearCart();
   };
+
+  const displayTotal = isMounted ? total.toLocaleString() : total.toString();
 
   if (items.length === 0 && step === 'form') {
     return (
@@ -100,16 +107,19 @@ export default function CheckoutPage() {
                   <div className="bg-white p-6 rounded-xl border shadow-sm">
                     <h2 className="font-bold text-lg mb-4 uppercase text-xs tracking-widest text-muted-foreground">Récapitulatif</h2>
                     <div className="space-y-3 mb-6">
-                      {items.map(item => (
-                        <div key={item.id} className="flex justify-between text-sm">
-                          <span className="flex-1 pr-4 line-clamp-1">{item.quantity}x {item.name}</span>
-                          <span className="font-medium">{(item.price * item.quantity).toLocaleString()} DH</span>
-                        </div>
-                      ))}
+                      {items.map(item => {
+                        const itemTotal = isMounted ? (item.price * item.quantity).toLocaleString() : (item.price * item.quantity).toString();
+                        return (
+                          <div key={item.id} className="flex justify-between text-sm">
+                            <span className="flex-1 pr-4 line-clamp-1">{item.quantity}x {item.name}</span>
+                            <span className="font-medium">{itemTotal} DH</span>
+                          </div>
+                        );
+                      })}
                       <Separator className="my-4" />
                       <div className="flex justify-between font-bold text-xl">
                         <span>Total à payer</span>
-                        <span className="text-primary">{total.toLocaleString()} DH</span>
+                        <span className="text-primary">{displayTotal} DH</span>
                       </div>
                     </div>
                     <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black h-14 text-xl">

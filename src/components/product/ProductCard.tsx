@@ -1,6 +1,7 @@
 
 "use client"
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Product } from '@/lib/types';
@@ -16,6 +17,12 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const placeholder = PlaceHolderImages.find(img => img.id === product.imageId);
 
   const discount = product.originalPrice 
@@ -31,6 +38,9 @@ export function ProductCard({ product }: ProductCardProps) {
       description: `${product.name} a été ajouté à votre panier.`,
     });
   };
+
+  const displayPrice = isMounted ? product.price.toLocaleString() : product.price.toString();
+  const displayOriginalPrice = isMounted && product.originalPrice ? product.originalPrice.toLocaleString() : (product.originalPrice?.toString() || "");
 
   return (
     <Link href={`/product/${product.id}`} className="group bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full">
@@ -61,10 +71,10 @@ export function ProductCard({ product }: ProductCardProps) {
         </h3>
         <div className="flex flex-col mt-auto">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-bold">{product.price.toLocaleString()} DH</span>
+            <span className="text-lg font-bold">{displayPrice} DH</span>
             {product.originalPrice && (
               <span className="text-xs text-muted-foreground line-through">
-                {product.originalPrice.toLocaleString()} DH
+                {displayOriginalPrice} DH
               </span>
             )}
           </div>

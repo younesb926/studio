@@ -1,6 +1,7 @@
 
 "use client"
 
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,13 @@ import { Separator } from '@/components/ui/separator';
 
 export default function CartPage() {
   const { items, total, removeFromCart, updateQuantity } = useCart();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const displayTotal = isMounted ? total.toLocaleString() : total.toString();
 
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
@@ -39,6 +47,9 @@ export default function CartPage() {
               <div className="lg:col-span-2 space-y-4">
                 {items.map((item) => {
                   const placeholder = PlaceHolderImages.find(img => img.id === item.imageId);
+                  const itemPrice = isMounted ? item.price.toLocaleString() : item.price.toString();
+                  const itemTotal = isMounted ? (item.price * item.quantity).toLocaleString() : (item.price * item.quantity).toString();
+                  
                   return (
                     <div key={item.id} className="bg-white p-4 rounded-xl border flex gap-4 shadow-sm">
                       <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
@@ -55,7 +66,7 @@ export default function CartPage() {
                         <div className="flex justify-between items-start">
                           <div>
                             <h3 className="font-bold text-sm line-clamp-2">{item.name}</h3>
-                            <p className="text-primary font-bold mt-1">{item.price.toLocaleString()} DH</p>
+                            <p className="text-primary font-bold mt-1">{itemPrice} DH</p>
                           </div>
                           <Button 
                             variant="ghost" 
@@ -87,7 +98,7 @@ export default function CartPage() {
                               <Plus className="h-3 w-3" />
                             </Button>
                           </div>
-                          <p className="text-sm font-bold">Total: {(item.price * item.quantity).toLocaleString()} DH</p>
+                          <p className="text-sm font-bold">Total: {itemTotal} DH</p>
                         </div>
                       </div>
                     </div>
@@ -101,7 +112,7 @@ export default function CartPage() {
                   <div className="space-y-3 mb-6">
                     <div className="flex justify-between text-sm">
                       <span>Sous-total</span>
-                      <span>{total.toLocaleString()} DH</span>
+                      <span>{displayTotal} DH</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span>Livraison</span>
@@ -111,7 +122,7 @@ export default function CartPage() {
                     <div className="flex justify-between items-end">
                       <span className="font-bold text-lg">Total</span>
                       <div className="text-right">
-                        <p className="text-2xl font-black text-primary">{total.toLocaleString()} DH</p>
+                        <p className="text-2xl font-black text-primary">{displayTotal} DH</p>
                         <p className="text-[10px] text-muted-foreground uppercase">TVA Incluse</p>
                       </div>
                     </div>

@@ -21,6 +21,11 @@ export default function ProductPage() {
   const product = products.find(p => p.id === id);
   const [recommendations, setRecommendations] = useState<string[]>([]);
   const [loadingRecs, setLoadingRecs] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     async function fetchRecs() {
@@ -57,7 +62,9 @@ export default function ProductPage() {
     });
   };
 
-  // Find matching products from mock data for recommendations
+  const displayPrice = isMounted ? product.price.toLocaleString() : product.price.toString();
+  const displayOriginalPrice = isMounted && product.originalPrice ? product.originalPrice.toLocaleString() : (product.originalPrice?.toString() || "");
+
   const recommendedProducts = products.filter(p => 
     recommendations.some(recName => p.name.toLowerCase().includes(recName.toLowerCase()) || p.categoryId === product.categoryId)
   ).slice(0, 4);
@@ -69,7 +76,6 @@ export default function ProductPage() {
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-            {/* Gallery */}
             <div className="space-y-4">
               <div className="relative aspect-square bg-white rounded-2xl border overflow-hidden shadow-sm">
                 {placeholder && (
@@ -88,7 +94,6 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Info */}
             <div className="flex flex-col gap-6">
               <div className="space-y-2">
                 <Badge variant="secondary" className="bg-primary/20 text-primary-foreground font-bold">
@@ -107,10 +112,10 @@ export default function ProductPage() {
 
               <div className="p-6 bg-white rounded-2xl border shadow-sm space-y-4">
                 <div className="flex items-center gap-4">
-                  <span className="text-4xl font-black text-primary">{product.price.toLocaleString()} DH</span>
+                  <span className="text-4xl font-black text-primary">{displayPrice} DH</span>
                   {product.originalPrice && (
                     <span className="text-xl text-muted-foreground line-through">
-                      {product.originalPrice.toLocaleString()} DH
+                      {displayOriginalPrice} DH
                     </span>
                   )}
                 </div>
@@ -151,7 +156,6 @@ export default function ProductPage() {
             </div>
           </div>
 
-          {/* AI Recommendations Section */}
           <section className="mt-16 pt-16 border-t">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold">Produits recommandés pour vous</h2>
