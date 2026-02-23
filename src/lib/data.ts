@@ -25,7 +25,7 @@ export const products: Product[] = [
     id: 'p3',
     name: 'Samsung TV 65" QLED 4K Smart',
     slug: 'samsung-qled-65',
-    description: 'Une qualité d\'image exceptionnelle avec des couleurs éclatantes.',
+    description: 'Une qualité d\'image exceptionnelle with des couleurs éclatantes.',
     price: 8990,
     originalPrice: 10500,
     categoryId: '4',
@@ -66,5 +66,5 @@ export const products: Product[] = [
     imageId: 'prod-6',
     stock: 15,
     isFeatured: true
-  },
+  }
 ];
