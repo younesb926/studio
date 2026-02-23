@@ -8,22 +8,9 @@ export const categories: Category[] = [
   { id: '4', name: 'Télévisions', slug: 'televisions', iconId: 'cat-televisions' },
   { id: '5', name: 'Climatiseurs', slug: 'climatiseurs', iconId: 'cat-climatiseurs' },
   { id: '6', name: 'Chauffe-eau', slug: 'chauffe-eau', iconId: 'cat-chauffe-eau' },
-  { id: '7', name: 'Téléphones & Tablettes', slug: 'telephones-tablettes', iconId: 'cat-telephones' },
 ];
 
 export const products: Product[] = [
-  {
-    id: 'p1',
-    name: 'Samsung Galaxy S24 Ultra 512GB',
-    slug: 'samsung-galaxy-s24-ultra',
-    description: 'Le summum de la technologie mobile avec IA intégrée et stylet S Pen.',
-    price: 13490,
-    originalPrice: 14990,
-    categoryId: '7',
-    imageId: 'prod-1',
-    stock: 12,
-    isFeatured: true
-  },
   {
     id: 'p2',
     name: 'MacBook Air 13" M3 8GB 256GB',

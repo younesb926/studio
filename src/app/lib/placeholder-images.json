@@ -38,22 +38,10 @@
       "imageHint": "water heater"
     },
     {
-      "id": "cat-telephones",
-      "description": "Téléphones & Tablettes",
-      "imageUrl": "https://picsum.photos/seed/p7/400/400",
-      "imageHint": "smartphone tablet"
-    },
-    {
       "id": "hero-promo",
       "description": "Offre Exceptionnelle",
       "imageUrl": "https://picsum.photos/seed/p8/1200/600",
       "imageHint": "electronics banner"
-    },
-    {
-      "id": "prod-1",
-      "description": "Smartphone Galaxy S24 Ultra",
-      "imageUrl": "https://picsum.photos/seed/s1/500/500",
-      "imageHint": "smartphone mobile"
     },
     {
       "id": "prod-2",
