@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Souk Electra | Votre expert électronique au Maroc',
+  title: 'Sahraoui Store | Votre expert électronique au Maroc',
   description: 'Achetez vos appareils électroménagers, smartphones et informatique au meilleur prix au Maroc. Livraison rapide et paiement à la livraison.',
 };
 

@@ -46,7 +46,7 @@ const recommendationsPrompt = ai.definePrompt({
   name: 'personalizedProductRecommendationsPrompt',
   input: {schema: PersonalizedProductRecommendationsInputSchema},
   output: {schema: PersonalizedProductRecommendationsOutputSchema},
-  prompt: `You are an AI-powered e-commerce recommendation engine for an electronics store named Souk Electra.
+  prompt: `You are an AI-powered e-commerce recommendation engine for an electronics store named Sahraoui Store.
 Your goal is to suggest relevant products to a customer based on their recent browsing history.
 
 Here is the customer's browsing history:

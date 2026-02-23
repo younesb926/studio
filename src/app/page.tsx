@@ -1,4 +1,3 @@
-
 "use client"
 
 import { Header } from '@/components/layout/Header';
@@ -25,7 +24,7 @@ export default function Home() {
           {heroImage && (
             <Image
               src={heroImage.imageUrl}
-              alt="Promo Souk Electra"
+              alt="Promo Sahraoui Store"
               fill
               priority
               className="object-cover"
@@ -36,7 +35,7 @@ export default function Home() {
             <div className="container mx-auto px-4">
               <div className="max-w-md text-white space-y-4">
                 <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight">
-                  Saison <span className="text-primary">Electra</span>
+                  Saison <span className="text-primary">Sahraoui</span>
                 </h1>
                 <p className="text-lg md:text-xl font-medium">
                   Jusqu'à -40% sur une sélection de produits gros électroménager.
@@ -104,8 +103,8 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="space-y-4">
               <Link href="/" className="flex items-center gap-2">
-                <div className="bg-primary text-primary-foreground p-1.5 rounded-lg font-bold text-xl leading-none">SE</div>
-                <span className="text-xl font-bold text-white">Souk Electra</span>
+                <div className="bg-primary text-primary-foreground p-1.5 rounded-lg font-bold text-xl leading-none">SS</div>
+                <span className="text-xl font-bold text-white">Sahraoui Store</span>
               </Link>
               <p className="text-sm text-muted-foreground">
                 Votre destination n°1 pour l'électronique de qualité au Maroc. Qualité, prix et service client irréprochable.
@@ -132,13 +131,13 @@ export default function Home() {
               <h4 className="font-bold text-white mb-4 uppercase text-sm tracking-widest">Contactez-nous</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>05 22 XX XX XX</li>
-                <li>support@soukelectra.ma</li>
+                <li>support@sahraouistore.ma</li>
                 <li>Casablanca, Maroc</li>
               </ul>
             </div>
           </div>
           <div className="border-t border-muted/20 pt-8 text-center text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Souk Electra. Tous droits réservés.
+            &copy; {new Date().getFullYear()} Sahraoui Store. Tous droits réservés.
           </div>
         </div>
       </footer>

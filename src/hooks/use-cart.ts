@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -8,7 +7,7 @@ export function useCart() {
   const [items, setItems] = useState<CartItem[]>([]);
 
   useEffect(() => {
-    const savedCart = localStorage.getItem('souk_electra_cart');
+    const savedCart = localStorage.getItem('sahraoui_store_cart');
     if (savedCart) {
       try {
         setItems(JSON.parse(savedCart));
@@ -20,7 +19,7 @@ export function useCart() {
 
   const saveCart = (newItems: CartItem[]) => {
     setItems(newItems);
-    localStorage.setItem('souk_electra_cart', JSON.stringify(newItems));
+    localStorage.setItem('sahraoui_store_cart', JSON.stringify(newItems));
   };
 
   const addToCart = (product: Product) => {

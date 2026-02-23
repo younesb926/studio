@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from 'next/link';
@@ -27,7 +26,7 @@ export function Header() {
               </SheetTrigger>
               <SheetContent side="left" className="w-[300px] p-0">
                 <SheetHeader className="p-4 bg-primary text-primary-foreground">
-                  <SheetTitle className="text-xl font-bold">Souk Electra</SheetTitle>
+                  <SheetTitle className="text-xl font-bold">Sahraoui Store</SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col p-4">
                   {categories.map((cat) => (
@@ -44,8 +43,8 @@ export function Header() {
             </Sheet>
 
             <Link href="/" className="flex items-center gap-2">
-              <div className="bg-primary text-primary-foreground p-1.5 rounded-lg font-bold text-xl leading-none">SE</div>
-              <span className="text-xl font-bold hidden sm:inline-block">Souk Electra</span>
+              <div className="bg-primary text-primary-foreground p-1.5 rounded-lg font-bold text-xl leading-none">SS</div>
+              <span className="text-xl font-bold hidden sm:inline-block">Sahraoui Store</span>
             </Link>
           </div>
 
