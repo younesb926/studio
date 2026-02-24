@@ -7,24 +7,23 @@ import { ProductCard } from '@/components/product/ProductCard';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, where, limit } from 'firebase/firestore';
-import { useMemo } from 'react';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, limit } from 'firebase/firestore';
 import { Product } from '@/lib/types';
 
 export default function Home() {
   const db = useFirestore();
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-promo');
 
-  // Fetch featured products from Firestore
-  const featuredQuery = useMemo(() => {
+  // Fetch featured products from Firestore using useMemoFirebase for stability
+  const featuredQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'products'), limit(10));
   }, [db]);
 
-  const { data: productsData, loading } = useCollection(featuredQuery);
+  const { data: productsData, isLoading } = useCollection(featuredQuery);
   const products = (productsData || []) as unknown as Product[];
 
   return (
@@ -74,15 +73,18 @@ export default function Home() {
               </Link>
             </div>
             
-            {loading ? (
+            {isLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {Array(5).fill(0).map((_, i) => (
-                  <div key={i} className="aspect-[3/4] bg-muted animate-pulse rounded-xl" />
+                  <div key={i} className="aspect-[3/4] bg-muted animate-pulse rounded-xl flex items-center justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
                 ))}
               </div>
             ) : products.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                لا توجد منتجات حالياً. أضف منتجات من لوحة التحكم.
+              <div className="text-center py-12 text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
+                <p>Aucun produit n'est disponible pour le moment.</p>
+                <p className="text-sm">Ajoutez des produits depuis le panneau d'administration.</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
