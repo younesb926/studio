@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, limit } from 'firebase/firestore';
+import { collection, query, limit, where } from 'firebase/firestore';
 import { Product } from '@/lib/types';
 
 export default function Home() {
@@ -18,9 +18,14 @@ export default function Home() {
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-promo');
 
   // Fetch featured products from Firestore using useMemoFirebase for stability
+  // We MUST filter by status='PUBLISHED' to match security rules for non-admin users
   const featuredQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, 'products'), limit(10));
+    return query(
+      collection(db, 'products'), 
+      where('status', '==', 'PUBLISHED'),
+      limit(10)
+    );
   }, [db]);
 
   const { data: productsData, isLoading } = useCollection(featuredQuery);
@@ -66,7 +71,7 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-8 border-b pb-4">
               <h2 className="text-2xl font-bold">Sélection du moment</h2>
-              <Link href="/deals">
+              <Link href="/">
                 <Button variant="link" className="text-primary font-bold">
                   Voir tout <ChevronRight className="h-4 w-4" />
                 </Button>
