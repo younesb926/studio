@@ -1,0 +1,148 @@
+/**
+ * PHIOLOSOPHY: PROTOTYPING MODE
+ * -------------------------------------------------------------------------------------------------
+ * This ruleset prioritizes rapid development and authorization security. It strictly enforces
+ * "who" can access data based on identity and ownership, but remains flexible on "what" the data 
+ * looks like (schema-agnostic) to allow for frequent iterations of the frontend.
+ * 
+ * CORE PHILOSOPHY:
+ * - Strict User-Ownership: All data under the /users/{userId} path is private and accessible only 
+ *   to that specific user.
+ * - Admin Control: Administrative privileges are determined by the existence of a document in 
+ *   the /roles_admin collection (DBAC - Database-Based Access Control).
+ * - Global Catalog: Categories and Products are public for reading, but restricted for writes 
+ *   to authorized administrators.
+ * - Status-Based Visibility: Products must have a 'PUBLISHED' status to be visible to the general 
+ *   public; otherwise, they are visible only to admins.
+ * 
+ * DATA STRUCTURE:
+ * - /users/{userId}: Root for private user data.
+ * - /users/{userId}/userProfiles/{userId}: Unique profile document for a user.
+ * - /users/{userId}/orders/{orderId}: User-specific order history.
+ * - /categories: Global product organization.
+ * - /products: Global product catalog.
+ * - /roles_admin: Mapping of UIDs to admin status.
+ * 
+ * KEY SECURITY DECISIONS:
+ * - Relational Integrity: On creation, documents under user paths must have internal ID fields 
+ *   that match the authenticated user's UID.
+ * - Query Security: Listing operations are restricted to the owner for user-scoped collections. 
+ *   For products, listing is restricted to published content for non-admins.
+ * - Immutability: Critical relational fields (like ownership IDs) are made immutable after creation.
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- GLOBAL HELPERS ---
+
+    /**
+     * @description Checks if a user is authenticated with Firebase Auth.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the authenticated user's UID matches the provided userId.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the user is an owner and the document exists (for updates/deletes).
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Checks if the user has a document in the roles_admin collection.
+     */
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    // --- COLLECTION RULES ---
+
+    /**
+     * @description Authorization mapping for admin roles. Existence of document = Admin status.
+     * @path /roles_admin/{adminUid}
+     * @allow (get) If the user is the owner of the UID or is an existing admin.
+     * @deny (write) Public or unauthenticated users cannot modify roles.
+     * @principle DBAC - Database Based Access Control.
+     */
+    match /roles_admin/{adminUid} {
+      allow get: if isOwner(adminUid) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update, delete: if false; // Roles are managed via Admin SDK/Console.
+    }
+
+    /**
+     * @description Stores private user profile information.
+     * @path /users/{userId}/userProfiles/{profileId}
+     * @allow (create) If auth UID matches both path {userId} and {profileId}.
+     * @deny (update) If the user attempts to change the internal 'id' field.
+     * @principle Verified Identity and Path-Data Consistency.
+     */
+    match /users/{userId}/userProfiles/{profileId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && profileId == userId && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Global product categories.
+     * @path /categories/{categoryId}
+     * @allow (read) Public access for all users.
+     * @deny (write) Restricted to users with the admin role.
+     * @principle Public Read with Admin-Only Writes.
+     */
+    match /categories/{categoryId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Global product catalog.
+     * @path /products/{productId}
+     * @allow (read) If the product is 'PUBLISHED' or the user is an admin.
+     * @deny (write) Restricted to administrators.
+     * @principle Status-Based Visibility Control.
+     */
+    match /products/{productId} {
+      allow get, list: if isAdmin() || resource.data.status == 'PUBLISHED';
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description User-specific orders.
+     * @path /users/{userId}/orders/{orderId}
+     * @allow (create) If the user owns the path and sets the internal userId correctly.
+     * @deny (list) If the user is not the owner of the parent userId path.
+     * @principle Ownership-based Shared Access (User Scope).
+     */
+    match /users/{userId}/orders/{orderId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Individual items within an order.
+       * @path /users/{userId}/orders/{orderId}/orderItems/{orderItemId}
+       * @allow (read/write) Inherits ownership permissions from the parent Order.
+       * @principle Hierarchical Authorization Independence.
+       */
+      match /orderItems/{orderItemId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.orderId == orderId;
+        allow update: if isExistingOwner(userId) && request.resource.data.orderId == resource.data.orderId;
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+  }
+}

@@ -1,29 +1,456 @@
-
 {
   "entities": {
-    "Product": {
-      "title": "Product",
-      "description": "Electronic products sold in the store",
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
       "type": "object",
+      "description": "Stores additional profile information for a user, linked to their Firebase Authentication ID. This entity complements the external authentication system.",
       "properties": {
-        "name": { "type": "string", "description": "اسم المنتج" },
-        "description": { "type": "string", "description": "وصف المنتج" },
-        "price": { "type": "number", "description": "ثمن المنتج" },
-        "categoryId": { "type": "string", "description": "معرف الفئة" },
-        "imageUrl": { "type": "string", "description": "رابط الصورة" },
-        "stock": { "type": "number", "description": "الكمية المتوفرة" },
-        "isFeatured": { "type": "boolean", "description": "منتج مميز" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity, matching the Firebase Authentication user ID. (PK)"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The user's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The user's last name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address, primarily for display and communication. (Format: email)"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The user's primary contact phone number."
+        },
+        "addressLine1": {
+          "type": "string",
+          "description": "The first line of the user's default shipping address."
+        },
+        "addressLine2": {
+          "type": "string",
+          "description": "The second line of the user's default shipping address. (Optional)"
+        },
+        "city": {
+          "type": "string",
+          "description": "The city of the user's default shipping address."
+        },
+        "stateProvince": {
+          "type": "string",
+          "description": "The state or province of the user's default shipping address."
+        },
+        "postalCode": {
+          "type": "string",
+          "description": "The postal code of the user's default shipping address."
+        },
+        "country": {
+          "type": "string",
+          "description": "The country of the user's default shipping address."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was created. (Format: date-time)"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was last updated. (Format: date-time)"
+        }
       },
-      "required": ["name", "description", "price", "categoryId"]
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "phoneNumber",
+        "addressLine1",
+        "city",
+        "stateProvince",
+        "postalCode",
+        "country",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Category": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Category",
+      "type": "object",
+      "description": "Represents a product category, allowing for hierarchical organization of products within the store.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Category entity. (PK)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The display name of the category (e.g., 'Télévisions')."
+        },
+        "slug": {
+          "type": "string",
+          "description": "A URL-friendly, unique identifier for the category, used for clean URLs and routing."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description explaining what this category includes."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL to an icon or representative image for the category. (Format: uri)"
+        },
+        "parentCategoryId": {
+          "type": "string",
+          "description": "Reference to the ID of the parent category, if this is a subcategory. Null for top-level categories. (Relationship: Category 1:N Category - self-referencing)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the category was created. (Format: date-time)"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the category was last updated. (Format: date-time)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "slug",
+        "description",
+        "imageUrl",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
+      "type": "object",
+      "description": "Represents a single product available for sale in the e-commerce store, including its details, pricing, and images.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Product entity. (PK)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the product."
+        },
+        "slug": {
+          "type": "string",
+          "description": "A URL-friendly, unique identifier for the product, used for clean URLs and routing."
+        },
+        "descriptionShort": {
+          "type": "string",
+          "description": "A brief, concise summary or tagline for the product."
+        },
+        "descriptionDetailed": {
+          "type": "string",
+          "description": "A comprehensive, detailed description of the product, including specifications and features."
+        },
+        "price": {
+          "type": "number",
+          "description": "The base selling price of the product."
+        },
+        "discountPercentage": {
+          "type": "number",
+          "description": "The percentage discount applied to the product's price, if any. (Optional)"
+        },
+        "stockQuantity": {
+          "type": "number",
+          "description": "The number of units of this product currently available in stock."
+        },
+        "imageUrls": {
+          "type": "array",
+          "description": "An array of URLs pointing to the product images stored in Firebase Storage. (Items: string, Format: uri)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "Reference to the primary Category ID this product belongs to. (Relationship: Category 1:N Product)"
+        },
+        "isFeatured": {
+          "type": "boolean",
+          "description": "A flag indicating if this product should be highlighted in the featured products section."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the product was added to the catalog. (Format: date-time)"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the product details were last updated. (Format: date-time)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "slug",
+        "descriptionShort",
+        "descriptionDetailed",
+        "price",
+        "stockQuantity",
+        "imageUrls",
+        "categoryId",
+        "isFeatured",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents a customer's placed order, containing high-level details about the purchase and shipping information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Order entity. (PK)"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile ID of the customer who placed the order. (Relationship: UserProfile 1:N Order)"
+        },
+        "orderDate": {
+          "type": "string",
+          "description": "Timestamp indicating when the order was placed. (Format: date-time)"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the order (e.g., 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled')."
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "The total monetary amount of the order, including all items, discounts, and shipping fees."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "The payment method chosen by the customer (e.g., 'Cash on Delivery')."
+        },
+        "shippingAddressLine1": {
+          "type": "string",
+          "description": "The first line of the shipping address specified for this particular order."
+        },
+        "shippingAddressLine2": {
+          "type": "string",
+          "description": "The second line of the shipping address for this order. (Optional)"
+        },
+        "shippingCity": {
+          "type": "string",
+          "description": "The city of the shipping address for this order."
+        },
+        "shippingStateProvince": {
+          "type": "string",
+          "description": "The state or province of the shipping address for this order."
+        },
+        "shippingPostalCode": {
+          "type": "string",
+          "description": "The postal code of the shipping address for this order."
+        },
+        "shippingCountry": {
+          "type": "string",
+          "description": "The country of the shipping address for this order."
+        },
+        "contactPhoneNumber": {
+          "type": "string",
+          "description": "A contact phone number provided for order communication specific to this order."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any additional notes or special instructions provided by the customer for this order. (Optional)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the order record was created. (Format: date-time)"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the order record was last updated. (Format: date-time)"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "orderDate",
+        "status",
+        "totalAmount",
+        "paymentMethod",
+        "shippingAddressLine1",
+        "shippingCity",
+        "shippingStateProvince",
+        "shippingPostalCode",
+        "shippingCountry",
+        "contactPhoneNumber",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "OrderItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OrderItem",
+      "type": "object",
+      "description": "Represents a single product item included within a specific order, capturing its state at the time of purchase.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the OrderItem entity. (PK)"
+        },
+        "orderId": {
+          "type": "string",
+          "description": "Reference to the Order ID this item belongs to. (Relationship: Order 1:N OrderItem)"
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to the Product ID that was ordered, linking to the product catalog."
+        },
+        "productName": {
+          "type": "string",
+          "description": "The name of the product at the time the order was placed (snapshot for historical accuracy)."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "The number of units of this specific product ordered."
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "The price of a single unit of the product at the time the order was placed (snapshot for historical accuracy, including any applicable discounts)."
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "The total price for this specific order item (quantity * unitPrice)."
+        }
+      },
+      "required": [
+        "id",
+        "orderId",
+        "productId",
+        "productName",
+        "quantity",
+        "unitPrice",
+        "totalPrice"
+      ]
     }
   },
   "auth": {
-    "providers": ["google.com"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "/products/{productId}": {
-      "schema": { "$ref": "#/backend/entities/Product" },
-      "description": "قائمة المنتجات المعروضة في المتجر"
-    }
+    "structure": [
+      {
+        "path": "/users/{userId}/userProfiles/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user-specific profile information. The document ID matches the Firebase Auth UID. Includes denormalized 'id' field for direct authorization matching. This ensures private user data is accessible only by the authenticated user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Authentication User ID, serving as both the parent collection ID and the UserProfile document ID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/categories/{categoryId}",
+        "definition": {
+          "entityName": "Category",
+          "schema": {
+            "$ref": "#/backend/entities/Category"
+          },
+          "description": "Represents product categories for the entire e-commerce store. These documents are publicly readable by all users and writeable only by administrators. No specific authorization fields are denormalized within the document for public access.",
+          "params": [
+            {
+              "name": "categoryId",
+              "description": "The unique identifier for a product category."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Stores details for all products. Documents are publicly readable only if their 'status' field is 'PUBLISHED'. Administrators have full read/write access regardless of status. This entity will include a 'status' field (e.g., DRAFT, PENDING_REVIEW, PUBLISHED) for explicit state modeling, and an 'adminCreatorId' field for audit purposes. Includes 'imageUrls' array for product images.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "The unique identifier for a product."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Stores individual orders placed by a user. Each order document is owned by a specific user. The 'userId' field within the document is denormalized to match the parent path's 'userId' for authorization independence and simplified security rules, allowing direct comparison with request.auth.uid.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Authentication User ID of the customer who placed the order."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique identifier for a specific order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/orders/{orderId}/orderItems/{orderItemId}",
+        "definition": {
+          "entityName": "OrderItem",
+          "schema": {
+            "$ref": "#/backend/entities/OrderItem"
+          },
+          "description": "Stores the individual items within a specific order. These documents are implicitly owned by the user who owns the parent order. The 'orderId' field within the document links to the parent order and is inherently authorized via the parent path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Authentication User ID, derived from the parent path."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique identifier for the parent order."
+            },
+            {
+              "name": "orderItemId",
+              "description": "The unique identifier for an item within an order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{adminUid}",
+        "definition": {
+          "entityName": "AdminRole",
+          "schema": {
+            "$ref": "#/backend/entities/AdminRole"
+          },
+          "description": "A collection used to designate Firebase Authentication UIDs as administrators. The mere existence of a document with a user's UID as its ID grants administrative privileges. This uses the DBAC principle for role-based access control and ensures authorization independence via a direct lookup.",
+          "params": [
+            {
+              "name": "adminUid",
+              "description": "The Firebase Authentication User ID of an administrator."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure for Souk Electra is designed following the core principles of Authorization Independence, Clarity of Intent, DBAC, QAPs, and Invariants. This ensures a secure, scalable, and debuggable e-commerce application.\n\n**Authorization Independence via Denormalization:**\n*   **User-Specific Data:** For `UserProfile`, `Order`, and `OrderItem` entities, a hierarchical path structure under `/users/{userId}/...` is employed. The `{userId}` wildcard in the path directly corresponds to the `request.auth.uid` of the authenticated user. Furthermore, the `Order` entity explicitly includes a `userId` field that mirrors the `userId` in its path. This denormalization means that security rules for user-owned data can directly compare `request.auth.uid` with the path segment or the document's `userId` field, completely eliminating the need for `get()` operations on parent documents to determine authorization. This enables atomic operations and simplifies rule debugging.\n*   **Global Data:** For `Category` and `Product` collections, which are publicly readable (for published products) and admin-writeable, no denormalization for authorization is needed within the documents themselves for public access. Admin authorization relies on a direct lookup in the `/roles_admin` collection, which is also a form of authorization independence as it avoids hierarchical `get()` calls.\n\n**QAPs (Queries are not Filters):**\n*   **User-Specific Lists:** The path-based ownership for `/users/{userId}/userProfiles/{userId}`, `/users/{userId}/orders/{orderId}`, and `/users/{userId}/orders/{orderId}/orderItems/{orderItemId}` inherently enforces QAPs. A `list` operation on `/users/myUserId/orders` will only ever return orders belonging to `myUserId`, making the query implicitly secure. Rules do not need to filter results after a broad query.\n*   **Global Public Lists:** The `categories` and `products` collections are designed for public read access. `list` operations on `/categories` will return all categories, and `list` operations on `/products` will return all *published* products (enforced by security rules on the `status` field, not by client-side filtering). This allows for efficient retrieval of catalog data.\n\n**Structural Segregation & Access Modeling:**\n*   **Private User Data:** All user profiles, orders, and order items are strictly segregated under `/users/{userId}`, ensuring that each user's data has a consistent and highly restrictive security posture, accessible only by the owner.\n*   **Global Catalog Data:** `categories` and `products` are top-level collections, signifying their global and publicly viewable nature. Their security posture is uniform: public read (with status-based visibility for products) and admin write.\n*   **Admin Roles (DBAC):** A dedicated collection, `/roles_admin/{adminUid}`, stores administrator UIDs. Authorization for administrative actions (e.g., creating/updating products/categories) is determined by the *existence* of a document with `request.auth.uid` as its ID in this collection. This adheres to the DBAC principle and maintains authorization independence by avoiding custom claims and complex role hierarchies.\n\n**Data Clarity and Predictability:**\n*   **Explicit State Modeling:** To address the user's request for products to 'remain pending' and their lifecycle, the `Product` entity will include a `status` field (e.g., `DRAFT`, `PENDING_REVIEW`, `PUBLISHED`, `ARCHIVED`). This explicitly models the product's state, making rules simpler (e.g., `allow read: if resource.data.status == 'PUBLISHED' || isAdmin()`). This eliminates ambiguity and simplifies conditional access.\n*   **Predictable Schema:** All entities maintain static keys and a clear, well-defined structure. Dynamic keys are avoided.\n*   **Radical Consistency:** Path wildcards like `{userId}`, `{categoryId}`, `{productId}`, `{orderId}`, and `{orderItemId}` are semantically descriptive, enhancing readability and maintainability of security rules.\n*   **Product Images:** The `imageUrls` array within the `Product` entity provides a straightforward way to manage multiple images associated with a product, as requested by the user, storing URLs typically from Firebase Storage.\n\n**Conceptual AdminRole Entity:**\nFor the `/roles_admin/{adminUid}` collection, a conceptual `AdminRole` entity is assumed to exist within the `backend.entities` structure, primarily consisting of an `id` field (matching `adminUid`) to signify the admin's presence for security rule checks. This is done to fully comply with the JSON schema requirements for `entityName` and `schema.$ref` while adhering to the DBAC principle.\n\nThis robust design minimizes rule complexity, prevents common security pitfalls, and supports the stated functional requirements for Souk Electra."
   }
 }

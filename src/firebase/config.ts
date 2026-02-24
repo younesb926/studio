@@ -1,11 +1,8 @@
-
-'use client';
-
 export const firebaseConfig = {
-  apiKey: "env-api-key",
-  authDomain: "env-auth-domain",
-  projectId: "env-project-id",
-  storageBucket: "env-storage-bucket",
-  messagingSenderId: "env-messaging-sender-id",
-  appId: "env-app-id"
+  "projectId": "studio-8308292138-11070",
+  "appId": "1:169972570030:web:d0777f2d3f67e3af4ada3f",
+  "apiKey": "AIzaSyAKIAJPEnw5jQxhZImiHuGqgyH4wS-R9oU",
+  "authDomain": "studio-8308292138-11070.firebaseapp.com",
+  "measurementId": "",
+  "messagingSenderId": "169972570030"
 };
