@@ -17,8 +17,6 @@ export default function Home() {
   const db = useFirestore();
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-promo');
 
-  // Fetch featured products from Firestore using useMemoFirebase for stability
-  // We MUST filter by status='PUBLISHED' to match security rules for non-admin users
   const featuredQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(
@@ -49,16 +47,6 @@ export default function Home() {
                   className="object-cover"
                 />
               )}
-              <div className="absolute inset-0 bg-black/5 flex items-center">
-                <div className="px-8 md:px-12 space-y-2 md:space-y-4 max-w-lg">
-                  <h2 className="text-xl md:text-3xl font-bold text-gray-800 leading-tight">
-                    Découvrez la 4K QLED<br/>dernière génération
-                  </h2>
-                  <Button size="sm" className="bg-primary text-secondary hover:bg-primary/90 font-bold rounded-md px-6">
-                    En profiter
-                  </Button>
-                </div>
-              </div>
             </div>
           </div>
         </section>
