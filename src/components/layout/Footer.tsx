@@ -117,7 +117,7 @@ export function Footer() {
         <Separator className="bg-white/10 mb-8" />
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/40">
-          <p>© 2024 Sahraoui Store. Tous droits réservés.</p>
+          <p>© 2026 Sahraoui Store. Tous droits réservés.</p>
           <div className="flex items-center gap-4">
              <img src="https://picsum.photos/seed/payment/150/30" alt="Payment Methods" className="opacity-50 grayscale hover:grayscale-0 transition-all cursor-pointer" />
           </div>
