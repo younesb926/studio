@@ -1,6 +1,9 @@
+
 "use client"
 
 import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Menu, Search, ShoppingCart, User, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +13,15 @@ import { categories } from '@/lib/data';
 
 export function Header() {
   const { itemCount } = useCart();
+  const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
+
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b">
@@ -67,15 +79,17 @@ export function Header() {
 
         {/* Search Bar - ElectroMall Style */}
         <div className="pb-4">
-          <div className="relative flex items-center h-12 rounded-full border-2 border-primary overflow-hidden">
+          <form onSubmit={handleSearch} className="relative flex items-center h-12 rounded-full border-2 border-primary overflow-hidden">
             <Input 
               placeholder="Qu'est-ce qui vous ferait plaisir ?" 
               className="flex-1 border-none focus-visible:ring-0 text-sm pl-6 h-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Button className="h-full px-6 bg-primary hover:bg-primary/90 rounded-none">
+            <Button type="submit" className="h-full px-6 bg-primary hover:bg-primary/90 rounded-none">
               <Search className="h-5 w-5 text-secondary" />
             </Button>
-          </div>
+          </form>
         </div>
       </div>
     </header>
