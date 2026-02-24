@@ -22,8 +22,8 @@
     {
       "id": "cat-televisions",
       "description": "Télévisions",
-      "imageUrl": "https://electromall.ma/wp-content/uploads/2025/11/television-maroc.webp",
-      "imageHint": "samsung qled tv"
+      "imageUrl": "https://res.cloudinary.com/dvusvr3go/image/upload/v1771955374/_Image_3_ukt9sh.png",
+      "imageHint": "smart tv qled"
     },
     {
       "id": "cat-climatiseurs",
