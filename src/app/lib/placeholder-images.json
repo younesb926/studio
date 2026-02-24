@@ -1,3 +1,4 @@
+
 {
   "placeholderImages": [
     {
@@ -51,7 +52,7 @@
     {
       "id": "prod-3",
       "description": "TV Samsung QLED 65",
-      "imageUrl": "https://picsum.photos/seed/samsung-tv-11/500/500",
+      "imageUrl": "https://images.pexels.com/photos/17233395/pexels-photo-17233395.jpeg",
       "imageHint": "big screen tv"
     },
     {
