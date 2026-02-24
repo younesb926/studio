@@ -1,3 +1,16 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "prod-3",
+      "description": "Samsung TV 65 QLED",
+      "imageUrl": "https://www.pexels.com/fr-fr/photo/fleurs-retro-vintage-television-17233395/",
+      "imageHint": "tv"
+    },
+    {
+      "id": "prod-4",
+      "description": "Nespresso Vertuo",
+      "imageUrl": "https://www.pexels.com/fr-fr/photo/assiette-cafeine-cafe-tasse-4195322/",
+      "imageHint": "coffee machine"
+    }
+  ]
 }

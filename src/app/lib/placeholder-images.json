@@ -1,4 +1,3 @@
-
 {
   "placeholderImages": [
     {
@@ -22,8 +21,8 @@
     {
       "id": "cat-televisions",
       "description": "Télévisions",
-      "imageUrl": "https://picsum.photos/seed/tv-led-66/400/400",
-      "imageHint": "smart led television"
+      "imageUrl": "https://images.pexels.com/photos/17233395/pexels-photo-17233395.jpeg",
+      "imageHint": "retro vintage television"
     },
     {
       "id": "cat-climatiseurs",
