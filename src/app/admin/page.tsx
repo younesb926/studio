@@ -384,12 +384,12 @@ export default function AdminPage() {
 
                     <div className="flex gap-4">
                       {editingProductId && (
-                        <Button type="button" variant="outline" onClick={resetForm} className="flex-1 h-16 font-bold text-lg">
+                        <Button type="button" variant="outline" onClick={resetForm} className="flex-1 h-12 font-bold">
                           Annuler
                         </Button>
                       )}
-                      <Button type="submit" className="flex-[2] h-16 bg-primary hover:bg-secondary text-white font-black text-xl gap-3 shadow-xl rounded-xl transition-all" disabled={loading}>
-                        {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : editingProductId ? <Pencil className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
+                      <Button type="submit" className="flex-[2] h-12 bg-primary hover:bg-secondary text-white font-black gap-2 shadow-md rounded-lg transition-all" disabled={loading}>
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : editingProductId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                         {editingProductId ? "METTRE À JOUR" : "PUBLIER LE PRODUIT"}
                       </Button>
                     </div>
