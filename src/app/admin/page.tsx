@@ -9,14 +9,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { categories as staticCategories } from '@/lib/data';
-import { useFirestore, useUser, useDoc, useMemoFirebase, useCollection, useAuth } from '@/firebase';
-import { collection, doc, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, useUser, useDoc, useMemoFirebase, useCollection, useAuth, updateDocumentNonBlocking, deleteDocumentNonBlocking, addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase';
+import { collection, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Plus, Loader2, Lock, ShieldCheck, Image as ImageIcon, X, AlertCircle, Upload } from 'lucide-react';
-import { addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { Package, Plus, Loader2, Lock, ShieldCheck, Image as ImageIcon, X, AlertCircle, Upload, Pencil, Trash2, ListFilter } from 'lucide-react';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { uploadImage } from '@/app/actions/upload-image';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Image from 'next/image';
 
 export default function AdminPage() {
   const db = useFirestore();
@@ -27,6 +28,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [claimLoading, setClaimLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("add");
   
   // Check Admin Role
   const adminDocRef = useMemoFirebase(() => {
@@ -43,13 +46,20 @@ export default function AdminPage() {
   const { data: dbCategories } = useCollection(categoriesQuery);
   const displayCategories = dbCategories && dbCategories.length > 0 ? dbCategories : staticCategories;
 
+  // Products from Firestore
+  const productsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, 'products'), orderBy('createdAt', 'desc'));
+  }, [db]);
+  const { data: products } = useCollection(productsQuery);
+
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
     descriptionShort: '',
     descriptionDetailed: '',
     price: '',
-    categorySlug: '', // Using categorySlug as truth
+    categorySlug: '',
     stockQuantity: '10',
     imageUrl: '',
     imageUrls: [] as string[],
@@ -110,13 +120,7 @@ export default function AdminPage() {
       if (uploadedCount > 0) {
         toast({
           title: "Succès",
-          description: `${uploadedCount} image(s) ajoutée(s) avec succès.${failedCount > 0 ? ` (${failedCount} erreur(s))` : ''}`,
-        });
-      } else if (failedCount > 0) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Échec du téléchargement des images.",
+          description: `${uploadedCount} image(s) ajoutée(s) avec succès.`,
         });
       }
     } finally {
@@ -140,6 +144,50 @@ export default function AdminPage() {
     setFormData({ ...formData, imageUrls: newUrls });
   };
 
+  const handleEditClick = (product: any) => {
+    setEditingProductId(product.id);
+    setFormData({
+      name: product.name || '',
+      slug: product.slug || '',
+      descriptionShort: product.descriptionShort || '',
+      descriptionDetailed: product.descriptionDetailed || '',
+      price: product.price?.toString() || '',
+      categorySlug: product.categorySlug || '',
+      stockQuantity: product.stockQuantity?.toString() || '10',
+      imageUrl: '',
+      imageUrls: product.imageUrls || [],
+      isFeatured: product.isFeatured || false
+    });
+    setActiveTab("add");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteClick = (productId: string) => {
+    if (!db || !confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) return;
+    const docRef = doc(db, 'products', productId);
+    deleteDocumentNonBlocking(docRef);
+    toast({
+      title: "Produit supprimé",
+      description: "Le produit a été retiré du catalogue.",
+    });
+  };
+
+  const resetForm = () => {
+    setEditingProductId(null);
+    setFormData({
+      name: '',
+      slug: '',
+      descriptionShort: '',
+      descriptionDetailed: '',
+      price: '',
+      categorySlug: '',
+      stockQuantity: '10',
+      imageUrl: '',
+      imageUrls: [],
+      isFeatured: false
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!db) return;
@@ -150,7 +198,6 @@ export default function AdminPage() {
     }
 
     setLoading(true);
-    const productsRef = collection(db, 'products');
     
     const slug = formData.slug || formData.name.toLowerCase().trim()
       .replace(/[^\w\s-]/g, '')
@@ -169,32 +216,23 @@ export default function AdminPage() {
       price: parseFloat(formData.price),
       stockQuantity: parseInt(formData.stockQuantity),
       imageUrls: finalImages,
-      categorySlug: formData.categorySlug, // Saving the slug directly
+      categorySlug: formData.categorySlug,
       isFeatured: formData.isFeatured,
       status: 'PUBLISHED',
-      createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
 
-    addDocumentNonBlocking(productsRef, dataToSave);
-    
-    toast({
-      title: "Succès !",
-      description: "Le produit a été ajouté au catalogue.",
-    });
+    if (editingProductId) {
+      const docRef = doc(db, 'products', editingProductId);
+      updateDocumentNonBlocking(docRef, dataToSave);
+      toast({ title: "Produit mis à jour", description: "Les modifications ont été enregistrées." });
+    } else {
+      const productsRef = collection(db, 'products');
+      addDocumentNonBlocking(productsRef, { ...dataToSave, createdAt: serverTimestamp() });
+      toast({ title: "Succès !", description: "Le produit a été ajouté au catalogue." });
+    }
 
-    setFormData({
-      name: '',
-      slug: '',
-      descriptionShort: '',
-      descriptionDetailed: '',
-      price: '',
-      categorySlug: '',
-      stockQuantity: '10',
-      imageUrl: '',
-      imageUrls: [],
-      isFeatured: false
-    });
+    resetForm();
     setLoading(false);
   };
 
@@ -242,17 +280,7 @@ export default function AdminPage() {
               <CardTitle className="text-2xl font-black">Mode Administrateur</CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-6 pt-4">
-              <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg flex items-start gap-3 text-left">
-                <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-800">
-                  Votre compte n'est pas encore configuré comme administrateur. Cliquez sur le bouton ci-dessous pour activer l'accès pour ce compte.
-                </p>
-              </div>
-              <Button 
-                onClick={handleClaimAdmin} 
-                className="w-full h-14 text-lg font-black bg-primary hover:bg-secondary text-white rounded-xl shadow-lg"
-                disabled={claimLoading}
-              >
+              <Button onClick={handleClaimAdmin} className="w-full h-14 text-lg font-black bg-primary text-white rounded-xl shadow-lg" disabled={claimLoading}>
                 {claimLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : "ACTIVER MON ACCÈS ADMIN"}
               </Button>
             </CardContent>
@@ -266,123 +294,139 @@ export default function AdminPage() {
     <div className="min-h-screen flex flex-col bg-muted/30">
       <Header />
       <main className="flex-1 py-12">
-        <div className="container mx-auto px-4 max-w-2xl">
-          <Card className="shadow-2xl border-t-8 border-t-primary rounded-2xl overflow-hidden">
-            <CardHeader className="flex flex-row items-center gap-4 bg-white border-b p-6">
-              <div className="p-3 bg-primary/10 rounded-xl">
-                <Package className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="text-2xl font-black italic">SAHRAOUI <span className="text-primary">ADMIN</span></CardTitle>
-                <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Ajouter un produit</p>
-              </div>
-            </CardHeader>
-            <CardContent className="p-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-xs font-black uppercase">Nom du produit</Label>
-                  <Input 
-                    id="name" 
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    placeholder="Samsung Galaxy S24 Ultra" 
-                    className="h-12 border-2 font-medium"
-                    required 
-                  />
-                </div>
+        <div className="container mx-auto px-4 max-w-4xl">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+            <div className="flex justify-center">
+              <TabsList className="bg-white border p-1 rounded-xl h-14 shadow-sm">
+                <TabsTrigger value="add" className="rounded-lg px-8 font-bold data-[state=active]:bg-primary data-[state=active]:text-secondary">
+                  {editingProductId ? "Modifier le produit" : "Ajouter un produit"}
+                </TabsTrigger>
+                <TabsTrigger value="list" className="rounded-lg px-8 font-bold data-[state=active]:bg-primary data-[state=active]:text-secondary">
+                  Gérer le stock
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="categorySlug" className="text-xs font-black uppercase">Catégorie</Label>
-                    <Select onValueChange={(val) => setFormData({...formData, categorySlug: val})} value={formData.categorySlug}>
-                      <SelectTrigger className="h-12 border-2">
-                        <SelectValue placeholder="Choisir..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {displayCategories.map(cat => (
-                          <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+            <TabsContent value="add">
+              <Card className="shadow-2xl border-t-8 border-t-primary rounded-2xl overflow-hidden max-w-2xl mx-auto">
+                <CardHeader className="flex flex-row items-center gap-4 bg-white border-b p-6">
+                  <div className="p-3 bg-primary/10 rounded-xl">
+                    <Package className="h-6 w-6 text-primary" />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="price" className="text-xs font-black uppercase">Prix (DH)</Label>
-                    <Input id="price" type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="h-12 border-2" required />
+                  <div>
+                    <CardTitle className="text-2xl font-black italic">SAHRAOUI <span className="text-primary">ADMIN</span></CardTitle>
+                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
+                      {editingProductId ? "Modifier un produit existant" : "Ajouter un nouveau produit"}
+                    </p>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase">Images du produit</Label>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="flex gap-2">
-                      <Input 
-                        type="file" 
-                        accept="image/*" 
-                        multiple 
-                        className="hidden" 
-                        ref={fileInputRef}
-                        onChange={handleFileUpload}
-                      />
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="flex-1 h-12 gap-2 border-dashed border-2 font-bold"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                      >
-                        {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                        {isUploading ? "Téléchargement..." : "Choisir des images (plusieurs possible)"}
-                      </Button>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-xs font-black uppercase">Nom du produit</Label>
+                      <Input id="name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Samsung Galaxy S24 Ultra" className="h-12 border-2 font-medium" required />
                     </div>
 
-                    <div className="relative">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="categorySlug" className="text-xs font-black uppercase">Catégorie</Label>
+                        <Select onValueChange={(val) => setFormData({...formData, categorySlug: val})} value={formData.categorySlug}>
+                          <SelectTrigger className="h-12 border-2">
+                            <SelectValue placeholder="Choisir..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {displayCategories.map(cat => (
+                              <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <div className="flex gap-2">
-                        <Input 
-                          value={formData.imageUrl}
-                          onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                          placeholder="Ou coller le lien de l'image..." 
-                          className="h-12 pl-10 border-2"
-                        />
-                        <Button type="button" onClick={handleAddImageUrl} variant="secondary" className="h-12 px-6 font-bold">
-                          Ajouter
+                      <div className="space-y-2">
+                        <Label htmlFor="price" className="text-xs font-black uppercase">Prix (DH)</Label>
+                        <Input id="price" type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="h-12 border-2" required />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs font-black uppercase">Images du produit</Label>
+                      <div className="grid grid-cols-1 gap-4">
+                        <Input type="file" accept="image/*" multiple className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+                        <Button type="button" variant="outline" className="h-12 gap-2 border-dashed border-2 font-bold" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                          {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                          {isUploading ? "Téléchargement..." : "Choisir des images (plusieurs possible)"}
+                        </Button>
+
+                        <div className="flex gap-2">
+                          <Input value={formData.imageUrl} onChange={(e) => setFormData({...formData, imageUrl: e.target.value})} placeholder="Ou coller le lien de l'image..." className="h-12 border-2" />
+                          <Button type="button" onClick={handleAddImageUrl} variant="secondary" className="h-12 px-6 font-bold">Ajouter</Button>
+                        </div>
+                      </div>
+                      
+                      {formData.imageUrls.length > 0 && (
+                        <div className="grid grid-cols-4 gap-2 mt-4">
+                          {formData.imageUrls.map((url, idx) => (
+                            <div key={idx} className="relative aspect-square rounded-lg border-2 overflow-hidden bg-muted group">
+                              <img src={url} alt="Preview" className="w-full h-full object-cover" />
+                              <button type="button" onClick={() => removeImageUrl(idx)} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="descDetailed" className="text-xs font-black uppercase">Description</Label>
+                      <Textarea id="descDetailed" value={formData.descriptionDetailed} onChange={(e) => setFormData({...formData, descriptionDetailed: e.target.value})} className="min-h-[120px] border-2" required />
+                    </div>
+
+                    <div className="flex gap-4">
+                      {editingProductId && (
+                        <Button type="button" variant="outline" onClick={resetForm} className="flex-1 h-16 font-bold text-lg">
+                          Annuler
+                        </Button>
+                      )}
+                      <Button type="submit" className="flex-[2] h-16 bg-primary hover:bg-secondary text-white font-black text-xl gap-3 shadow-xl rounded-xl transition-all" disabled={loading}>
+                        {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : editingProductId ? <Pencil className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
+                        {editingProductId ? "METTRE À JOUR" : "PUBLIER LE PRODUIT"}
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="list">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products?.map((product) => (
+                  <Card key={product.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-all border group">
+                    <div className="relative aspect-square bg-muted">
+                      {product.imageUrls?.[0] && (
+                        <Image src={product.imageUrls[0]} alt={product.name} fill className="object-cover" unoptimized />
+                      )}
+                      <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button size="icon" variant="secondary" className="bg-white/90 hover:bg-white" onClick={() => handleEditClick(product)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="destructive" onClick={() => handleDeleteClick(product.id)}>
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                  </div>
-                  
-                  {formData.imageUrls.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2 mt-4">
-                      {formData.imageUrls.map((url, idx) => (
-                        <div key={idx} className="relative aspect-square rounded-lg border-2 overflow-hidden bg-muted group">
-                          <img src={url} alt="Preview" className="w-full h-full object-cover" />
-                          <button 
-                            type="button" 
-                            onClick={() => removeImageUrl(idx)}
-                            className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="descDetailed" className="text-xs font-black uppercase">Description</Label>
-                  <Textarea id="descDetailed" value={formData.descriptionDetailed} onChange={(e) => setFormData({...formData, descriptionDetailed: e.target.value})} className="min-h-[120px] border-2" required />
-                </div>
-
-                <Button type="submit" className="w-full h-16 bg-primary hover:bg-secondary text-white font-black text-xl gap-3 shadow-xl rounded-xl transition-all" disabled={loading}>
-                  {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Plus className="h-6 w-6" />}
-                  PUBLIER LE PRODUIT
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+                    <CardContent className="p-4">
+                      <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">{product.categorySlug}</p>
+                      <h3 className="font-bold text-sm line-clamp-1 mb-2">{product.name}</h3>
+                      <div className="flex items-center justify-between">
+                        <p className="text-primary font-black">{product.price.toLocaleString()} DH</p>
+                        <p className="text-[10px] font-bold px-2 py-1 bg-muted rounded">Stock: {product.stockQuantity}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </div>
