@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,16 +12,20 @@ import { useFirestore, useUser, useDoc, useMemoFirebase, useCollection, useAuth 
 import { collection, doc, serverTimestamp } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Plus, Loader2, Lock, ShieldCheck, Image as ImageIcon, X, AlertCircle } from 'lucide-react';
+import { Package, Plus, Loader2, Lock, ShieldCheck, Image as ImageIcon, X, AlertCircle, Upload } from 'lucide-react';
 import { addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
+import { uploadImage } from '@/app/actions/upload-image';
 
 export default function AdminPage() {
   const db = useFirestore();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [loading, setLoading] = useState(false);
   const [claimLoading, setClaimLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   
   // Check Admin Role
   const adminDocRef = useMemoFirebase(() => {
@@ -68,6 +71,36 @@ export default function AdminPage() {
     });
     
     setTimeout(() => setClaimLoading(false), 2000);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const uploadFormData = new FormData();
+    uploadFormData.append('image', file);
+
+    try {
+      const result = await uploadImage(uploadFormData);
+      setFormData(prev => ({
+        ...prev,
+        imageUrls: [...prev.imageUrls, result.imageUrl]
+      }));
+      toast({
+        title: "Succès",
+        description: "L'image a été téléchargée et ajoutée.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erreur de téléchargement",
+        description: error.message,
+      });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const handleAddImageUrl = () => {
@@ -147,7 +180,6 @@ export default function AdminPage() {
     );
   }
 
-  // Not logged in view
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col bg-muted/30">
@@ -170,7 +202,6 @@ export default function AdminPage() {
     );
   }
 
-  // Access Denied / Bootstrapping
   if (!adminData) {
     return (
       <div className="min-h-screen flex flex-col bg-muted/30">
@@ -255,19 +286,43 @@ export default function AdminPage() {
 
                 <div className="space-y-2">
                   <Label className="text-xs font-black uppercase">Images du produit</Label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="flex gap-2">
                       <Input 
-                        value={formData.imageUrl}
-                        onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                        placeholder="Coller le lien de l'image ici..." 
-                        className="h-12 pl-10 border-2"
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
                       />
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="flex-1 h-12 gap-2 border-dashed border-2 font-bold"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                      >
+                        {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                        {isUploading ? "Téléchargement..." : "Choisir une image"}
+                      </Button>
                     </div>
-                    <Button type="button" onClick={handleAddImageUrl} variant="secondary" className="h-12 px-6 font-bold">
-                      Ajouter
-                    </Button>
+
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div className="flex gap-2">
+                        <Input 
+                          value={formData.imageUrl}
+                          onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
+                          placeholder="Ou coller le lien de l'image..." 
+                          className="h-12 pl-10 border-2"
+                        />
+                        <Button type="button" onClick={handleAddImageUrl} variant="secondary" className="h-12 px-6 font-bold">
+                          Ajouter
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                   
                   {formData.imageUrls.length > 0 && (
@@ -286,7 +341,7 @@ export default function AdminPage() {
                       ))}
                     </div>
                   )}
-                  <p className="text-[10px] text-muted-foreground italic">Vous pouvez ajouter plusieurs images en collant leurs liens successivement.</p>
+                  <p className="text-[10px] text-muted-foreground italic">يمكنك رفع صور من جهازك أو لصق روابط خارجية.</p>
                 </div>
 
                 <div className="space-y-2">
