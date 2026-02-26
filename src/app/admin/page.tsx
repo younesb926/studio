@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,7 +35,7 @@ export default function AdminPage() {
   }, [db, user]);
   const { data: adminData, isLoading: isAdminChecking } = useDoc(adminDocRef);
 
-  // Categories
+  // Categories from Firestore
   const categoriesQuery = useMemoFirebase(() => {
     if (!db) return null;
     return collection(db, 'categories');
@@ -48,7 +49,7 @@ export default function AdminPage() {
     descriptionShort: '',
     descriptionDetailed: '',
     price: '',
-    categoryId: '',
+    categorySlug: '', // Using categorySlug as truth
     stockQuantity: '10',
     imageUrl: '',
     imageUrls: [] as string[],
@@ -122,6 +123,11 @@ export default function AdminPage() {
     e.preventDefault();
     if (!db) return;
     
+    if (!formData.categorySlug) {
+      toast({ variant: "destructive", title: "Erreur", description: "Veuillez choisir une catégorie." });
+      return;
+    }
+
     setLoading(true);
     const productsRef = collection(db, 'products');
     
@@ -142,7 +148,7 @@ export default function AdminPage() {
       price: parseFloat(formData.price),
       stockQuantity: parseInt(formData.stockQuantity),
       imageUrls: finalImages,
-      categoryId: formData.categoryId,
+      categorySlug: formData.categorySlug, // Saving the slug directly
       isFeatured: formData.isFeatured,
       status: 'PUBLISHED',
       createdAt: serverTimestamp(),
@@ -162,7 +168,7 @@ export default function AdminPage() {
       descriptionShort: '',
       descriptionDetailed: '',
       price: '',
-      categoryId: '',
+      categorySlug: '',
       stockQuantity: '10',
       imageUrl: '',
       imageUrls: [],
@@ -266,14 +272,14 @@ export default function AdminPage() {
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="categoryId" className="text-xs font-black uppercase">Catégorie</Label>
-                    <Select onValueChange={(val) => setFormData({...formData, categoryId: val})} value={formData.categoryId}>
+                    <Label htmlFor="categorySlug" className="text-xs font-black uppercase">Catégorie</Label>
+                    <Select onValueChange={(val) => setFormData({...formData, categorySlug: val})} value={formData.categorySlug}>
                       <SelectTrigger className="h-12 border-2">
                         <SelectValue placeholder="Choisir..." />
                       </SelectTrigger>
                       <SelectContent>
                         {displayCategories.map(cat => (
-                          <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                          <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -341,7 +347,6 @@ export default function AdminPage() {
                       ))}
                     </div>
                   )}
-                  <p className="text-[10px] text-muted-foreground italic">يمكنك رفع صور من جهازك أو لصق روابط خارجية.</p>
                 </div>
 
                 <div className="space-y-2">

@@ -11,12 +11,16 @@ export interface Product {
   name: string;
   slug: string;
   description: string;
+  descriptionShort?: string;
+  descriptionDetailed?: string;
   price: number;
   originalPrice?: number;
-  categoryId: string;
+  categoryId?: string;
+  categorySlug: string; // الحقل الأساسي للربط
   imageUrl?: string;
   imageUrls: string[];
-  stock: number;
+  stockQuantity: number;
+  stock?: number; // للتوافق مع البطاقات القديمة
   isFeatured?: boolean;
   status?: string;
   createdAt?: any;
