@@ -7,7 +7,7 @@ import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { ShieldCheck, Truck, RefreshCw, Star, Loader2 } from 'lucide-react';
+import { ShieldCheck, Truck, RefreshCw, Star, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { personalizedProductRecommendations } from '@/ai/flows/personalized-product-recommendations-flow';
@@ -15,6 +15,13 @@ import { ProductCard } from '@/components/product/ProductCard';
 import { useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, query, collection, where, limit } from 'firebase/firestore';
 import { Product } from '@/lib/types';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export default function ProductPage() {
   const { id } = useParams();
@@ -40,8 +47,6 @@ export default function ProductPage() {
       if (product) {
         setLoadingRecs(true);
         try {
-          // Fix: Ensure browsingHistory contains only non-null strings
-          // Use categorySlug instead of categoryId for consistency
           const history = [product.name, product.categorySlug].filter((item): item is string => typeof item === 'string' && item.length > 0);
           
           const result = await personalizedProductRecommendations({
@@ -74,9 +79,10 @@ export default function ProductPage() {
     </div>
   );
 
-  const imageUrl = (product.imageUrls && product.imageUrls.length > 0) 
-    ? product.imageUrls[0] 
-    : (product.imageUrl || 'https://picsum.photos/seed/default/500/500');
+  // Ensure we have an array of images, fallback if empty
+  const images = (product.imageUrls && product.imageUrls.length > 0) 
+    ? product.imageUrls 
+    : [product.imageUrl || 'https://picsum.photos/seed/default/500/500'];
 
   const discount = product.originalPrice 
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -101,20 +107,50 @@ export default function ProductPage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
             <div className="space-y-4">
-              <div className="relative aspect-square bg-white rounded-2xl border overflow-hidden shadow-sm">
-                <Image
-                  src={imageUrl}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  unoptimized={true}
-                />
-                {discount > 0 && (
-                  <Badge className="absolute top-4 left-4 bg-red-600 text-white font-black text-lg p-2">
-                    -{discount}%
-                  </Badge>
-                )}
+              <div className="relative group">
+                <Carousel className="w-full">
+                  <CarouselContent>
+                    {images.map((url, idx) => (
+                      <CarouselItem key={idx}>
+                        <div className="relative aspect-square bg-white rounded-2xl border overflow-hidden shadow-sm">
+                          <Image
+                            src={url}
+                            alt={`${product.name} - image ${idx + 1}`}
+                            fill
+                            className="object-cover"
+                            unoptimized={true}
+                            priority={idx === 0}
+                          />
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  
+                  {images.length > 1 && (
+                    <>
+                      <CarouselPrevious className="left-4 bg-white/80 hover:bg-white text-secondary border-none shadow-lg" />
+                      <CarouselNext className="right-4 bg-white/80 hover:bg-white text-secondary border-none shadow-lg" />
+                    </>
+                  )}
+
+                  {discount > 0 && (
+                    <Badge className="absolute top-4 left-4 bg-red-600 text-white font-black text-lg p-2 z-10">
+                      -{discount}%
+                    </Badge>
+                  )}
+                </Carousel>
               </div>
+
+              {/* Thumbnails indicator */}
+              {images.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                  {images.map((url, idx) => (
+                    <div key={idx} className="relative w-20 h-20 rounded-lg border-2 border-muted overflow-hidden shrink-0">
+                      <Image src={url} alt="thumbnail" fill className="object-cover" unoptimized />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-6">
@@ -143,8 +179,8 @@ export default function ProductPage() {
                   )}
                 </div>
                 
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {product.descriptionDetailed || product.descriptionShort || product.name}
+                <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
+                  {product.descriptionDetailed || product.descriptionShort || product.description || product.name}
                 </p>
 
                 <div className="pt-4 space-y-3">
@@ -189,8 +225,6 @@ export default function ProductPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                   {/* In a production app, we would fetch the actual products by name/id here. 
-                       For this prototype, we just show that the AI generated recommendations. */}
                    <p className="col-span-full text-sm text-muted-foreground mb-4">L'IA suggère : {recommendations.join(", ")}</p>
                 </div>
               )}
