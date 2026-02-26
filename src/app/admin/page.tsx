@@ -13,11 +13,12 @@ import { useFirestore, useUser, useDoc, useMemoFirebase, useCollection, useAuth,
 import { collection, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Plus, Loader2, Lock, ShieldCheck, Image as ImageIcon, X, AlertCircle, Upload, Pencil, Trash2, ListFilter } from 'lucide-react';
+import { Package, Plus, Loader2, Lock, ShieldCheck, Image as ImageIcon, X, AlertCircle, Upload, Pencil, Trash2, ListFilter, FolderOpen } from 'lucide-react';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { uploadImage } from '@/app/actions/upload-image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from 'next/image';
+import { Separator } from '@/components/ui/separator';
 
 export default function AdminPage() {
   const db = useFirestore();
@@ -294,7 +295,7 @@ export default function AdminPage() {
     <div className="min-h-screen flex flex-col bg-muted/30">
       <Header />
       <main className="flex-1 py-12">
-        <div className="container mx-auto px-4 max-w-4xl">
+        <div className="container mx-auto px-4 max-w-5xl">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
             <div className="flex justify-center">
               <TabsList className="bg-white border p-1 rounded-xl h-14 shadow-sm">
@@ -350,7 +351,7 @@ export default function AdminPage() {
                     <div className="space-y-2">
                       <Label className="text-xs font-black uppercase">Images du produit</Label>
                       <div className="grid grid-cols-1 gap-4">
-                        <Input type="file" accept="image/*" multiple className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+                        <input type="file" accept="image/*" multiple className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
                         <Button type="button" variant="outline" className="h-12 gap-2 border-dashed border-2 font-bold" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                           {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                           {isUploading ? "Téléchargement..." : "Choisir des images (plusieurs possible)"}
@@ -398,32 +399,93 @@ export default function AdminPage() {
             </TabsContent>
 
             <TabsContent value="list">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products?.map((product) => (
-                  <Card key={product.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-all border group">
-                    <div className="relative aspect-square bg-muted">
-                      {product.imageUrls?.[0] && (
-                        <Image src={product.imageUrls[0]} alt={product.name} fill className="object-cover" unoptimized />
-                      )}
-                      <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button size="icon" variant="secondary" className="bg-white/90 hover:bg-white" onClick={() => handleEditClick(product)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="destructive" onClick={() => handleDeleteClick(product.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+              <div className="space-y-12">
+                {displayCategories.map((category) => {
+                  const categoryProducts = products?.filter(p => p.categorySlug === category.slug) || [];
+                  
+                  if (categoryProducts.length === 0) return null;
+
+                  return (
+                    <div key={category.id} className="space-y-4">
+                      <div className="flex items-center gap-3 px-2">
+                        <div className="bg-primary/20 p-2 rounded-lg">
+                          <FolderOpen className="h-5 w-5 text-primary" />
+                        </div>
+                        <h2 className="text-xl font-black italic uppercase tracking-tight">
+                          {category.name} <span className="text-muted-foreground text-sm font-bold ml-2">({categoryProducts.length})</span>
+                        </h2>
+                      </div>
+                      <Separator />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {categoryProducts.map((product) => (
+                          <Card key={product.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-all border group relative">
+                            <div className="relative aspect-square bg-muted">
+                              {product.imageUrls?.[0] && (
+                                <Image src={product.imageUrls[0]} alt={product.name} fill className="object-cover" unoptimized />
+                              )}
+                              <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <Button size="icon" variant="secondary" className="bg-white/90 hover:bg-white shadow-md" onClick={() => handleEditClick(product)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button size="icon" variant="destructive" className="shadow-md" onClick={() => handleDeleteClick(product.id)}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            <CardContent className="p-4">
+                              <h3 className="font-bold text-sm line-clamp-2 mb-3 h-10">{product.name}</h3>
+                              <div className="flex items-center justify-between">
+                                <p className="text-primary font-black">{product.price.toLocaleString()} DH</p>
+                                <p className="text-[10px] font-bold px-2 py-1 bg-muted rounded">Stock: {product.stockQuantity}</p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
                       </div>
                     </div>
-                    <CardContent className="p-4">
-                      <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">{product.categorySlug}</p>
-                      <h3 className="font-bold text-sm line-clamp-1 mb-2">{product.name}</h3>
-                      <div className="flex items-center justify-between">
-                        <p className="text-primary font-black">{product.price.toLocaleString()} DH</p>
-                        <p className="text-[10px] font-bold px-2 py-1 bg-muted rounded">Stock: {product.stockQuantity}</p>
+                  );
+                })}
+
+                {/* Handle products without category or with unknown category */}
+                {products?.some(p => !displayCategories.find(c => c.slug === p.categorySlug)) && (
+                   <div className="space-y-4">
+                    <div className="flex items-center gap-3 px-2">
+                      <div className="bg-red-500/20 p-2 rounded-lg">
+                        <AlertCircle className="h-5 w-5 text-red-500" />
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      <h2 className="text-xl font-black italic uppercase tracking-tight text-red-500">
+                        Autres / Catégorie Inconnue
+                      </h2>
+                    </div>
+                    <Separator />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                      {products?.filter(p => !displayCategories.find(c => c.slug === p.categorySlug)).map((product) => (
+                        <Card key={product.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-all border group relative">
+                          <div className="relative aspect-square bg-muted">
+                            {product.imageUrls?.[0] && (
+                              <Image src={product.imageUrls[0]} alt={product.name} fill className="object-cover" unoptimized />
+                            )}
+                            <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                              <Button size="icon" variant="secondary" className="bg-white/90 hover:bg-white shadow-md" onClick={() => handleEditClick(product)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button size="icon" variant="destructive" className="shadow-md" onClick={() => handleDeleteClick(product.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <CardContent className="p-4">
+                            <h3 className="font-bold text-sm line-clamp-2 mb-3 h-10">{product.name}</h3>
+                            <div className="flex items-center justify-between">
+                              <p className="text-primary font-black">{product.price.toLocaleString()} DH</p>
+                              <p className="text-[10px] font-bold px-2 py-1 bg-muted rounded">Stock: {product.stockQuantity}</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
