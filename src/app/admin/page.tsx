@@ -75,29 +75,50 @@ export default function AdminPage() {
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setIsUploading(true);
-    const uploadFormData = new FormData();
-    uploadFormData.append('image', file);
+    const filesArray = Array.from(files);
+    let uploadedCount = 0;
+    let failedCount = 0;
 
     try {
-      const result = await uploadImage(uploadFormData);
-      setFormData(prev => ({
-        ...prev,
-        imageUrls: [...prev.imageUrls, result.imageUrl]
-      }));
-      toast({
-        title: "Succès",
-        description: "L'image a été téléchargée et ajoutée.",
+      const uploadPromises = filesArray.map(async (file) => {
+        const uploadFormData = new FormData();
+        uploadFormData.append('image', file);
+        try {
+          const result = await uploadImage(uploadFormData);
+          uploadedCount++;
+          return result.imageUrl;
+        } catch (error) {
+          failedCount++;
+          return null;
+        }
       });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erreur de téléchargement",
-        description: error.message,
-      });
+
+      const results = await Promise.all(uploadPromises);
+      const successfulUrls = results.filter((url): url is string => url !== null);
+
+      if (successfulUrls.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          imageUrls: [...prev.imageUrls, ...successfulUrls]
+        }));
+      }
+
+      if (uploadedCount > 0) {
+        toast({
+          title: "Succès",
+          description: `${uploadedCount} image(s) ajoutée(s) avec succès.${failedCount > 0 ? ` (${failedCount} erreur(s))` : ''}`,
+        });
+      } else if (failedCount > 0) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Échec du téléchargement des images.",
+        });
+      }
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -297,6 +318,7 @@ export default function AdminPage() {
                       <Input 
                         type="file" 
                         accept="image/*" 
+                        multiple 
                         className="hidden" 
                         ref={fileInputRef}
                         onChange={handleFileUpload}
@@ -309,7 +331,7 @@ export default function AdminPage() {
                         disabled={isUploading}
                       >
                         {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                        {isUploading ? "Téléchargement..." : "Choisir une image"}
+                        {isUploading ? "Téléchargement..." : "Choisir des images (plusieurs possible)"}
                       </Button>
                     </div>
 
