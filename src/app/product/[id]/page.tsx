@@ -40,8 +40,12 @@ export default function ProductPage() {
       if (product) {
         setLoadingRecs(true);
         try {
+          // Fix: Ensure browsingHistory contains only non-null strings
+          // Use categorySlug instead of categoryId for consistency
+          const history = [product.name, product.categorySlug].filter((item): item is string => typeof item === 'string' && item.length > 0);
+          
           const result = await personalizedProductRecommendations({
-            browsingHistory: [product.name, product.categoryId],
+            browsingHistory: history,
             numRecommendations: 4
           });
           setRecommendations(result.recommendations);
@@ -174,6 +178,24 @@ export default function ProductPage() {
               </div>
             </div>
           </div>
+
+          {/* AI Recommendations Section */}
+          {recommendations.length > 0 && (
+            <div className="mt-16">
+              <h2 className="text-2xl font-black mb-8 border-b pb-4 italic">POURRAIENT VOUS <span className="text-primary">INTÉRESSER</span></h2>
+              {loadingRecs ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                   {/* In a production app, we would fetch the actual products by name/id here. 
+                       For this prototype, we just show that the AI generated recommendations. */}
+                   <p className="col-span-full text-sm text-muted-foreground mb-4">L'IA suggère : {recommendations.join(", ")}</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
     </div>
