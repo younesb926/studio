@@ -14,9 +14,13 @@ export interface Product {
   price: number;
   originalPrice?: number;
   categoryId: string;
-  imageId: string;
+  imageUrl?: string;
+  imageUrls: string[];
   stock: number;
   isFeatured?: boolean;
+  status?: string;
+  createdAt?: any;
+  updatedAt?: any;
 }
 
 export interface CartItem extends Product {

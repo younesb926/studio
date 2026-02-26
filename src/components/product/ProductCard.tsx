@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useCart } from '@/hooks/use-cart';
 import { toast } from '@/hooks/use-toast';
 import { ShoppingCart, Star } from 'lucide-react';
@@ -24,10 +23,10 @@ export function ProductCard({ product }: ProductCardProps) {
     setIsMounted(true);
   }, []);
 
-  // Use product image if available, else fallback to placeholders
-  const imageUrl = product.imageUrl || 
-    (PlaceHolderImages.find(img => img.id === product.imageId)?.imageUrl) ||
-    'https://picsum.photos/seed/default/500/500';
+  // Use product images from Firestore (ImgBB URLs)
+  const imageUrl = (product.imageUrls && product.imageUrls.length > 0) 
+    ? product.imageUrls[0] 
+    : (product.imageUrl || 'https://picsum.photos/seed/default/500/500');
 
   const discount = product.originalPrice 
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -54,6 +53,7 @@ export function ProductCard({ product }: ProductCardProps) {
           alt={product.name}
           fill
           className="object-cover group-hover:scale-110 transition-transform duration-700"
+          unoptimized={true} // Bypasses Next.js Image optimization for immediate reflecting of new uploads
         />
         
         {/* Badges Overlay */}

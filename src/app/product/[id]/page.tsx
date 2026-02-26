@@ -3,25 +3,33 @@
 
 import { useParams } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
-import { products } from '@/lib/data';
 import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
-import { ShieldCheck, Truck, RefreshCw, Star } from 'lucide-react';
+import { ShieldCheck, Truck, RefreshCw, Star, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { personalizedProductRecommendations } from '@/ai/flows/personalized-product-recommendations-flow';
 import { ProductCard } from '@/components/product/ProductCard';
+import { useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
+import { doc, query, collection, where, limit } from 'firebase/firestore';
+import { Product } from '@/lib/types';
 
 export default function ProductPage() {
   const { id } = useParams();
+  const db = useFirestore();
   const { addToCart } = useCart();
-  const product = products.find(p => p.id === id);
   const [recommendations, setRecommendations] = useState<string[]>([]);
   const [loadingRecs, setLoadingRecs] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+
+  const productRef = useMemoFirebase(() => {
+    if (!db || !id) return null;
+    return doc(db, 'products', id as string);
+  }, [db, id]);
+
+  const { data: product, isLoading: isProductLoading } = useDoc(productRef);
 
   useEffect(() => {
     setIsMounted(true);
@@ -47,15 +55,31 @@ export default function ProductPage() {
     fetchRecs();
   }, [product]);
 
-  if (!product) return <div>Produit non trouvé</div>;
+  if (isProductLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-  const placeholder = PlaceHolderImages.find(img => img.id === product.imageId);
+  if (!product) return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <div className="flex-1 flex items-center justify-center">Produit non trouvé</div>
+    </div>
+  );
+
+  const imageUrl = (product.imageUrls && product.imageUrls.length > 0) 
+    ? product.imageUrls[0] 
+    : (product.imageUrl || 'https://picsum.photos/seed/default/500/500');
+
   const discount = product.originalPrice 
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
   const handleAddToCart = () => {
-    addToCart(product);
+    addToCart(product as unknown as Product);
     toast({
       title: "Ajouté au panier",
       description: `${product.name} est maintenant dans votre panier.`,
@@ -64,10 +88,6 @@ export default function ProductPage() {
 
   const displayPrice = isMounted ? product.price.toLocaleString() : product.price.toString();
   const displayOriginalPrice = isMounted && product.originalPrice ? product.originalPrice.toLocaleString() : (product.originalPrice?.toString() || "");
-
-  const recommendedProducts = products.filter(p => 
-    recommendations.some(recName => p.name.toLowerCase().includes(recName.toLowerCase()) || p.categoryId === product.categoryId)
-  ).slice(0, 4);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -78,14 +98,13 @@ export default function ProductPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
             <div className="space-y-4">
               <div className="relative aspect-square bg-white rounded-2xl border overflow-hidden shadow-sm">
-                {placeholder && (
-                  <Image
-                    src={placeholder.imageUrl}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                  />
-                )}
+                <Image
+                  src={imageUrl}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  unoptimized={true}
+                />
                 {discount > 0 && (
                   <Badge className="absolute top-4 left-4 bg-red-600 text-white font-black text-lg p-2">
                     -{discount}%
@@ -121,18 +140,18 @@ export default function ProductPage() {
                 </div>
                 
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  {product.description}
+                  {product.descriptionDetailed || product.descriptionShort || product.name}
                 </p>
 
                 <div className="pt-4 space-y-3">
                   <div className="flex items-center gap-2 text-sm font-medium">
-                    <div className={`h-2.5 w-2.5 rounded-full ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
-                    {product.stock > 0 ? `En stock (${product.stock} unités disponibles)` : 'En rupture de stock'}
+                    <div className={`h-2.5 w-2.5 rounded-full ${product.stockQuantity > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+                    {product.stockQuantity > 0 ? `En stock (${product.stockQuantity} unités disponibles)` : 'En rupture de stock'}
                   </div>
                   <Button 
                     className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-black text-xl shadow-lg"
                     onClick={handleAddToCart}
-                    disabled={product.stock === 0}
+                    disabled={product.stockQuantity === 0}
                   >
                     Ajouter au Panier
                   </Button>
@@ -155,29 +174,6 @@ export default function ProductPage() {
               </div>
             </div>
           </div>
-
-          <section className="mt-16 pt-16 border-t">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold">Produits recommandés pour vous</h2>
-              <div className="h-1 bg-primary w-24 rounded-full" />
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {loadingRecs ? (
-                Array(4).fill(0).map((_, i) => (
-                  <div key={i} className="animate-pulse bg-muted aspect-[3/4] rounded-xl" />
-                ))
-              ) : recommendedProducts.length > 0 ? (
-                recommendedProducts.map(p => (
-                  <ProductCard key={p.id} product={p} />
-                ))
-              ) : (
-                products.slice(0, 4).map(p => (
-                  <ProductCard key={p.id} product={p} />
-                ))
-              )}
-            </div>
-          </section>
         </div>
       </main>
     </div>

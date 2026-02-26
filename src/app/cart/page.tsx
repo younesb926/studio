@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Separator } from '@/components/ui/separator';
 
 export default function CartPage() {
@@ -46,21 +45,23 @@ export default function CartPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-4">
                 {items.map((item) => {
-                  const placeholder = PlaceHolderImages.find(img => img.id === item.imageId);
+                  const imageUrl = (item.imageUrls && item.imageUrls.length > 0) 
+                    ? item.imageUrls[0] 
+                    : (item.imageUrl || 'https://picsum.photos/seed/default/500/500');
+                  
                   const itemPrice = isMounted ? item.price.toLocaleString() : item.price.toString();
                   const itemTotal = isMounted ? (item.price * item.quantity).toLocaleString() : (item.price * item.quantity).toString();
                   
                   return (
                     <div key={item.id} className="bg-white p-4 rounded-xl border flex gap-4 shadow-sm">
                       <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-                        {placeholder && (
-                          <Image
-                            src={placeholder.imageUrl}
-                            alt={item.name}
-                            fill
-                            className="object-cover"
-                          />
-                        )}
+                        <Image
+                          src={imageUrl}
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                          unoptimized={true}
+                        />
                       </div>
                       <div className="flex-1 flex flex-col justify-between">
                         <div className="flex justify-between items-start">
