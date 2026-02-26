@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, ChevronLeft } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 
@@ -19,6 +19,15 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [isMounted, setIsMounted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Form State
+  const [formData, setFormData] = useState({
+    fullname: '',
+    phone: '',
+    city: '',
+    address: ''
+  });
 
   useEffect(() => {
     setIsMounted(true);
@@ -26,12 +35,37 @@ export default function CheckoutPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+
+    // Prepare WhatsApp Message
+    const whatsappNumber = "212608023714";
+    const itemsList = items.map(item => `- ${item.quantity}x ${item.name} (${item.price.toLocaleString()} DH)`).join('\n');
+    
+    const message = `*طلب جديد - Sahraoui Store*\n\n` +
+      `*معلومات الزبون:*\n` +
+      `• الاسم: ${formData.fullname}\n` +
+      `• الهاتف: ${formData.phone}\n` +
+      `• المدينة: ${formData.city}\n` +
+      `• العنوان: ${formData.address}\n\n` +
+      `*تفاصيل الطلب:*\n${itemsList}\n\n` +
+      `*المجموع الإجمالي:* ${total.toLocaleString()} DH\n\n` +
+      `_طريقة الدفع: الدفع عند الاستلام_`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+
     toast({
       title: "Commande enregistrée",
-      description: "Votre commande a été reçue avec succès.",
+      description: "Redirection vers WhatsApp...",
     });
+
+    // Open WhatsApp in a new tab
+    window.open(whatsappUrl, '_blank');
+    
+    // Switch to success step and clear cart
     setStep('success');
     clearCart();
+    setLoading(false);
   };
 
   const displayTotal = isMounted ? total.toLocaleString() : total.toString();
@@ -72,19 +106,43 @@ export default function CheckoutPage() {
                     <div className="grid gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="fullname">Nom Complet</Label>
-                        <Input id="fullname" placeholder="Ex: Ahmed Alaoui" required />
+                        <Input 
+                          id="fullname" 
+                          placeholder="Ex: Ahmed Alaoui" 
+                          required 
+                          value={formData.fullname}
+                          onChange={(e) => setFormData({...formData, fullname: e.target.value})}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone">Téléphone</Label>
-                        <Input id="phone" placeholder="06XXXXXXXX" required />
+                        <Input 
+                          id="phone" 
+                          placeholder="06XXXXXXXX" 
+                          required 
+                          value={formData.phone}
+                          onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="city">Ville</Label>
-                        <Input id="city" placeholder="Ex: Casablanca" required />
+                        <Input 
+                          id="city" 
+                          placeholder="Ex: Casablanca" 
+                          required 
+                          value={formData.city}
+                          onChange={(e) => setFormData({...formData, city: e.target.value})}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="address">Adresse de livraison</Label>
-                        <Input id="address" placeholder="N°, Rue, Quartier..." required />
+                        <Input 
+                          id="address" 
+                          placeholder="N°, Rue, Quartier..." 
+                          required 
+                          value={formData.address}
+                          onChange={(e) => setFormData({...formData, address: e.target.value})}
+                        />
                       </div>
                     </div>
                   </div>
@@ -122,11 +180,15 @@ export default function CheckoutPage() {
                         <span className="text-primary">{displayTotal} DH</span>
                       </div>
                     </div>
-                    <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black h-14 text-xl">
-                      Confirmer la commande
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black h-14 text-xl gap-2"
+                      disabled={loading}
+                    >
+                      {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : "Confirmer la commande"}
                     </Button>
                     <p className="mt-4 text-center text-xs text-muted-foreground">
-                      En cliquant sur "Confirmer", vous acceptez nos conditions générales de vente.
+                      En cliquant sur "Confirmer", vous serez redirigé vers WhatsApp pour finaliser avec un conseiller.
                     </p>
                   </div>
                 </div>
@@ -138,9 +200,9 @@ export default function CheckoutPage() {
                 <CheckCircle2 className="h-10 w-10" />
               </div>
               <h1 className="text-3xl font-black mb-2">Merci !</h1>
-              <p className="text-lg font-bold mb-2">Votre commande est confirmée.</p>
+              <p className="text-lg font-bold mb-2">Votre commande est en cours.</p>
               <p className="text-muted-foreground mb-8 px-8">
-                Un conseiller client vous appellera dans les prochaines minutes pour confirmer les détails de votre livraison.
+                Nous avons ouvert une discussion WhatsApp pour confirmer les détails. Si la fenêtre ne s'est pas ouverte, cliquez ci-dessous.
               </p>
               <div className="space-y-3 px-8">
                 <Link href="/">
@@ -148,11 +210,9 @@ export default function CheckoutPage() {
                     Continuer mes achats
                   </Button>
                 </Link>
-                <Link href="/account">
-                  <Button variant="outline" className="w-full">
-                    Suivre ma commande
-                  </Button>
-                </Link>
+                <Button variant="outline" className="w-full" onClick={() => window.open('https://wa.me/212608023714', '_blank')}>
+                  Contacter sur WhatsApp
+                </Button>
               </div>
             </div>
           )}
