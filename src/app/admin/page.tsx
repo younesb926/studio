@@ -82,7 +82,7 @@ export default function AdminPage() {
     
     toast({
       title: "Activation en cours",
-      description: "Vos droits d'administrateور sont en cours d'activation. Veuillez patienter 2 secondes.",
+      description: "Vos droits d'administrateur sont en cours d'activation. Veuillez patienter 2 secondes.",
     });
     
     setTimeout(() => setClaimLoading(false), 2000);
@@ -139,33 +139,43 @@ export default function AdminPage() {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
+      transformHeader: (header) => header.trim().replace(/^\ufeff/, ''),
       complete: async (results) => {
         const data = results.data as any[];
         let importedCount = 0;
         let errorCount = 0;
 
         for (const row of data) {
-          const { name, price, categorySlug, imageUrl, stock, description } = row;
+          // Clean data from CSV
+          const name = row.name?.trim();
+          const priceStr = row.price?.toString().trim().replace(/[^\d.]/g, '');
+          const categorySlug = row.categorySlug?.trim();
+          const imageUrl = row.imageUrl?.trim();
+          const stock = row.stock?.toString().trim();
+          const description = row.description?.trim();
 
           // Simple validation
-          if (!name || !price || !categorySlug || !imageUrl) {
+          if (!name || !priceStr || !categorySlug || !imageUrl) {
             errorCount++;
             continue;
           }
 
-          const slug = name.toLowerCase().trim()
+          const slug = name.toLowerCase()
             .replace(/[^\w\s-]/g, '')
             .replace(/[\s_-]+/g, '-')
             .replace(/^-+|-+$/g, '');
 
+          // Handle potential multiple images in one cell
+          const images = imageUrl.split(/[;,]/).map((u: string) => u.trim()).filter((u: string) => u !== '');
+
           const dataToSave = {
             name,
             slug,
-            descriptionShort: description ? description.substring(0, 50) : name,
+            descriptionShort: description ? description.substring(0, 80) : name,
             descriptionDetailed: description || name,
-            price: parseFloat(price),
+            price: parseFloat(priceStr),
             stockQuantity: parseInt(stock) || 10,
-            imageUrls: [imageUrl],
+            imageUrls: images.length > 0 ? images : [imageUrl],
             categorySlug: categorySlug,
             isFeatured: false,
             status: 'PUBLISHED',
