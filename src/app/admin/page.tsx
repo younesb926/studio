@@ -13,22 +13,25 @@ import { useFirestore, useUser, useDoc, useMemoFirebase, useCollection, useAuth,
 import { collection, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Plus, Loader2, Lock, ShieldCheck, Image as ImageIcon, X, AlertCircle, Upload, Pencil, Trash2, ListFilter, FolderOpen } from 'lucide-react';
+import { Package, Plus, Loader2, Lock, ShieldCheck, Image as ImageIcon, X, AlertCircle, Upload, Pencil, Trash2, ListFilter, FolderOpen, FileSpreadsheet } from 'lucide-react';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { uploadImage } from '@/app/actions/upload-image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
+import Papa from 'papaparse';
 
 export default function AdminPage() {
   const db = useFirestore();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const csvInputRef = useRef<HTMLInputElement>(null);
   
   const [loading, setLoading] = useState(false);
   const [claimLoading, setClaimLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("add");
   
@@ -79,7 +82,7 @@ export default function AdminPage() {
     
     toast({
       title: "Activation en cours",
-      description: "Vos droits d'administrateur sont en cours d'activation. Veuillez patienter 2 secondes.",
+      description: "Vos droits d'administrateور sont en cours d'activation. Veuillez patienter 2 secondes.",
     });
     
     setTimeout(() => setClaimLoading(false), 2000);
@@ -92,7 +95,6 @@ export default function AdminPage() {
     setIsUploading(true);
     const filesArray = Array.from(files);
     let uploadedCount = 0;
-    let failedCount = 0;
 
     try {
       const uploadPromises = filesArray.map(async (file) => {
@@ -103,7 +105,6 @@ export default function AdminPage() {
           uploadedCount++;
           return result.imageUrl;
         } catch (error) {
-          failedCount++;
           return null;
         }
       });
@@ -128,6 +129,75 @@ export default function AdminPage() {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const handleCsvImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !db) return;
+
+    setIsImporting(true);
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        const data = results.data as any[];
+        let importedCount = 0;
+        let errorCount = 0;
+
+        for (const row of data) {
+          const { name, price, categorySlug, imageUrl, stock, description } = row;
+
+          // Simple validation
+          if (!name || !price || !categorySlug || !imageUrl) {
+            errorCount++;
+            continue;
+          }
+
+          const slug = name.toLowerCase().trim()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/[\s_-]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+
+          const dataToSave = {
+            name,
+            slug,
+            descriptionShort: description ? description.substring(0, 50) : name,
+            descriptionDetailed: description || name,
+            price: parseFloat(price),
+            stockQuantity: parseInt(stock) || 10,
+            imageUrls: [imageUrl],
+            categorySlug: categorySlug,
+            isFeatured: false,
+            status: 'PUBLISHED',
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          };
+
+          try {
+            const productsRef = collection(db, 'products');
+            addDocumentNonBlocking(productsRef, dataToSave);
+            importedCount++;
+          } catch (error) {
+            errorCount++;
+          }
+        }
+
+        toast({
+          title: "Importation terminée",
+          description: `${importedCount} produits importés, ${errorCount} erreurs.`,
+        });
+        setIsImporting(false);
+        if (csvInputRef.current) csvInputRef.current.value = '';
+      },
+      error: (error) => {
+        toast({
+          variant: "destructive",
+          title: "Erreur CSV",
+          description: "Impossible de lire le ملف CSV.",
+        });
+        setIsImporting(false);
+      }
+    });
   };
 
   const handleAddImageUrl = () => {
@@ -297,7 +367,7 @@ export default function AdminPage() {
       <main className="flex-1 py-12">
         <div className="container mx-auto px-4 max-w-5xl">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-            <div className="flex justify-center">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4">
               <TabsList className="bg-white border p-1 rounded-xl h-14 shadow-sm">
                 <TabsTrigger value="add" className="rounded-lg px-8 font-bold data-[state=active]:bg-primary data-[state=active]:text-secondary">
                   {editingProductId ? "Modifier le produit" : "Ajouter un produit"}
@@ -306,6 +376,19 @@ export default function AdminPage() {
                   Gérer le stock
                 </TabsTrigger>
               </TabsList>
+              
+              <div className="flex gap-2">
+                <input type="file" accept=".csv" className="hidden" ref={csvInputRef} onChange={handleCsvImport} />
+                <Button 
+                  variant="outline" 
+                  className="h-14 px-6 font-bold gap-2 border-2 border-dashed border-primary/50 hover:bg-primary/10"
+                  onClick={() => csvInputRef.current?.click()}
+                  disabled={isImporting}
+                >
+                  {isImporting ? <Loader2 className="h-5 w-5 animate-spin" /> : <FileSpreadsheet className="h-5 w-5 text-primary" />}
+                  {isImporting ? "Importation..." : "Importer CSV"}
+                </Button>
+              </div>
             </div>
 
             <TabsContent value="add">
