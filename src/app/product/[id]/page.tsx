@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useParams } from 'next/navigation';
@@ -55,7 +54,7 @@ export default function ProductPage() {
           });
           setRecommendations(result.recommendations);
         } catch (e) {
-          console.error("Failed to fetch AI recommendations", e);
+          // Silently fail on AI recommendation errors (e.g. quota exceeded)
         } finally {
           setLoadingRecs(false);
         }
@@ -63,6 +62,19 @@ export default function ProductPage() {
     }
     fetchRecs();
   }, [product]);
+
+  const recommendedProductsQuery = useMemoFirebase(() => {
+    if (!db || recommendations.length === 0) return null;
+    return query(
+      collection(db, 'products'),
+      where('name', 'in', recommendations),
+      where('status', '==', 'PUBLISHED'),
+      limit(4)
+    );
+  }, [db, recommendations]);
+
+  const { data: recommendedProductsData, isLoading: areRecsLoading } = useCollection(recommendedProductsQuery);
+  const recommendedProducts = (recommendedProductsData || []) as unknown as Product[];
 
   if (isProductLoading) {
     return (
@@ -216,16 +228,22 @@ export default function ProductPage() {
           </div>
 
           {/* AI Recommendations Section */}
-          {recommendations.length > 0 && (
+          {(loadingRecs || areRecsLoading || recommendedProducts.length > 0) && (
             <div className="mt-16">
               <h2 className="text-2xl font-black mb-8 border-b pb-4 italic">POURRAIENT VOUS <span className="text-primary">INTÉRESSER</span></h2>
-              {loadingRecs ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              {(loadingRecs || areRecsLoading) ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {Array(4).fill(0).map((_, i) => (
+                    <div key={i} className="aspect-[3/4] bg-muted animate-pulse rounded-xl flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                   <p className="col-span-full text-sm text-muted-foreground mb-4">L'IA suggère : {recommendations.join(", ")}</p>
+                   {recommendedProducts.map((p) => (
+                    <ProductCard key={p.id} product={p} />
+                  ))}
                 </div>
               )}
             </div>
