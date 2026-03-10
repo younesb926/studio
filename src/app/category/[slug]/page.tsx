@@ -45,7 +45,7 @@ export default function CategoryPage() {
 
   if (!category && isMounted && !isLoading) {
     return (
-      <div className="min-h-screen flex flex-col bg-muted/30">
+      <div className="min-h-screen flex flex-col bg-secondary">
         <Header />
         <main className="flex-1 flex flex-col items-center justify-center p-4">
           <h1 className="text-2xl font-bold mb-4">Catégorie non trouvée</h1>
@@ -58,7 +58,7 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f5f5]">
+    <div className="min-h-screen flex flex-col bg-secondary">
       <Header />
       
       <main className="flex-1 py-6">
@@ -70,7 +70,7 @@ export default function CategoryPage() {
             <span className="font-bold">{category?.name || slug}</span>
           </div>
 
-          <div className="flex items-center justify-between mb-8 bg-white p-4 rounded-xl border shadow-sm">
+          <div className="flex items-center justify-between mb-8 bg-background p-4 rounded-xl border shadow-sm">
             <h1 className="text-xl md:text-2xl font-black">{category?.name || slug}</h1>
             <Button variant="outline" size="sm" className="gap-2">
               <SlidersHorizontal className="h-4 w-4" /> Filtres
@@ -82,7 +82,7 @@ export default function CategoryPage() {
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
           ) : !categoryProducts || categoryProducts.length === 0 ? (
-            <div className="bg-white rounded-2xl p-12 text-center border shadow-sm">
+            <div className="bg-background rounded-2xl p-12 text-center border shadow-sm">
               <p className="text-muted-foreground mb-4">Aucun produit n'est disponible dans cette catégorie pour le moment.</p>
               <Link href="/">
                 <Button variant="link" className="text-primary font-bold">Parcourir d'autres sections</Button>

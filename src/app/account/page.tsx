@@ -23,7 +23,7 @@ export default function AccountPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <aside className="md:col-span-1 space-y-2">
-              <Button variant="secondary" className="w-full justify-start gap-3 bg-primary/20 text-primary-foreground font-bold">
+              <Button variant="secondary" className="w-full justify-start gap-3 bg-primary/20 text-primary font-bold">
                 <User className="h-4 w-4" /> Profil
               </Button>
               <Button variant="ghost" className="w-full justify-start gap-3">

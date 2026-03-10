@@ -30,12 +30,12 @@ export default function Home() {
   const products = (productsData || []) as unknown as Product[];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f5f5]">
+    <div className="min-h-screen flex flex-col bg-secondary">
       <Header />
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-white">
+        <section className="bg-background">
           <div className="container mx-auto px-0 md:px-4 py-0 md:py-4">
             <div className="relative w-full aspect-[2.5/1] overflow-hidden rounded-none md:rounded-xl">
               {heroImage && (
@@ -55,7 +55,7 @@ export default function Home() {
         <CategoryGrid />
 
         {/* Featured Products */}
-        <section className="py-12 bg-white mt-4">
+        <section className="py-12 bg-background mt-4">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-8 border-b pb-4">
               <h2 className="text-2xl font-bold">Sélection du moment</h2>

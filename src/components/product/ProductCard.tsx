@@ -46,7 +46,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const displayOriginalPrice = isMounted && product.originalPrice ? product.originalPrice.toLocaleString() : (product.originalPrice?.toString() || "");
 
   return (
-    <Link href={`/product/${product.id}`} className="group bg-white rounded-xl border overflow-hidden hover:shadow-2xl transition-all duration-500 flex flex-col h-full relative">
+    <Link href={`/product/${product.id}`} className="group bg-background rounded-xl border overflow-hidden hover:shadow-lg transition-all duration-500 flex flex-col h-full relative">
       <div className="relative aspect-square overflow-hidden bg-muted m-2 rounded-lg">
         <Image
           src={imageUrl}
@@ -59,19 +59,19 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Badges Overlay */}
         <div className="absolute top-2 left-2 flex flex-col gap-2">
           {discount > 0 && (
-            <Badge className="bg-primary text-white font-black text-xs px-2 py-0.5 rounded-none shadow-lg">
+            <Badge className="bg-primary text-primary-foreground font-black text-xs px-2 py-0.5 rounded-none shadow-lg">
               -{discount}%
             </Badge>
           )}
           {product.isFeatured && (
-            <Badge className="bg-secondary text-white font-bold text-[10px] rounded-none shadow-lg">
+            <Badge className="bg-foreground text-background font-bold text-[10px] rounded-none shadow-lg">
               HOT
             </Badge>
           )}
         </div>
 
         {product.stock <= 5 && product.stock > 0 && (
-          <Badge variant="outline" className="absolute bottom-2 left-2 bg-white/95 text-red-600 border-red-200 text-[10px] font-black uppercase">
+          <Badge variant="outline" className="absolute bottom-2 left-2 bg-background/95 text-red-600 border-red-200 text-[10px] font-black uppercase">
             Plus que {product.stock} restants
           </Badge>
         )}
@@ -89,7 +89,7 @@ export function ProductCard({ product }: ProductCardProps) {
         
         <div className="flex flex-col mt-auto pt-2">
           <div className="flex flex-wrap items-baseline gap-2">
-            <span className="text-xl font-black text-secondary">{displayPrice} <span className="text-xs">DH</span></span>
+            <span className="text-xl font-black text-secondary-foreground">{displayPrice} <span className="text-xs">DH</span></span>
             {product.originalPrice && (
               <span className="text-xs text-muted-foreground line-through font-medium">
                 {displayOriginalPrice} DH
@@ -98,7 +98,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
           
           <Button 
-            className="w-full mt-4 bg-primary hover:bg-secondary text-white font-black h-11 rounded-lg shadow-md transition-all group-hover:shadow-primary/20 flex items-center gap-2"
+            className="w-full mt-4 bg-primary text-primary-foreground font-black h-11 rounded-lg shadow-md transition-all group-hover:shadow-primary/20 flex items-center gap-2"
             onClick={handleAddToCart}
           >
             <ShoppingCart className="h-4 w-4" />

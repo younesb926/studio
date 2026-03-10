@@ -24,7 +24,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white border-b">
+    <header className="sticky top-0 z-50 w-full bg-background border-b">
       <div className="container mx-auto px-4">
         {/* Mobile Header Top */}
         <div className="flex h-16 items-center justify-between gap-4">
@@ -68,7 +68,7 @@ export function Header() {
               <Button variant="ghost" size="icon" className="relative h-10 w-10">
                 <ShoppingCart className="h-6 w-6" />
                 {itemCount > 0 && (
-                  <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-white">
+                  <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground">
                     {itemCount}
                   </span>
                 )}
@@ -87,7 +87,7 @@ export function Header() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Button type="submit" className="h-full px-6 bg-primary hover:bg-primary/90 rounded-none">
-              <Search className="h-5 w-5 text-secondary" />
+              <Search className="h-5 w-5 text-primary-foreground" />
             </Button>
           </form>
         </div>
