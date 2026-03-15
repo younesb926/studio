@@ -44,7 +44,7 @@ export default function ProductPage() {
       collection(db, 'products'),
       where('categorySlug', '==', product.categorySlug),
       where('status', '==', 'PUBLISHED'),
-      limit(5) // Fetch 5 to have extras if current product is included
+      limit(6) // Fetch 6 to have extras if current product is included
     );
   }, [db, product]);
 
@@ -53,7 +53,7 @@ export default function ProductPage() {
   // Filter out the current product from the recommendations
   const recommendedProducts = (recommendedProductsData || [])
     .filter(p => p.id !== id)
-    .slice(0, 4) as unknown as Product[];
+    .slice(0, 5) as unknown as Product[];
 
 
   if (isProductLoading) {
@@ -212,15 +212,15 @@ export default function ProductPage() {
             <div className="mt-16">
               <h2 className="text-2xl font-black mb-8 border-b pb-4 italic">PRODUITS <span className="text-primary">SIMILAIRES</span></h2>
               {areRecsLoading ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {Array(4).fill(0).map((_, i) => (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {Array(5).fill(0).map((_, i) => (
                     <div key={i} className="aspect-[3/4] bg-muted animate-pulse rounded-xl flex items-center justify-center">
                       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                    {recommendedProducts.map((p) => (
                     <ProductCard key={p.id} product={p} />
                   ))}
