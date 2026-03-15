@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 import Papa from 'papaparse';
+import { Badge } from '@/components/ui/badge';
 
 export default function AdminPage() {
   const db = useFirestore();
@@ -445,7 +446,12 @@ export default function AdminPage() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="stockQuantity" className="text-xs font-black uppercase">Quantité en Stock</Label>
-                        <Input id="stockQuantity" type="number" value={formData.stockQuantity} onChange={(e) => setFormData({...formData, stockQuantity: e.target.value})} className="h-12 border-2" required />
+                        <div className="flex items-center gap-2">
+                          <Input id="stockQuantity" type="number" value={formData.stockQuantity} onChange={(e) => setFormData({...formData, stockQuantity: e.target.value})} className="h-12 border-2" required />
+                          <Button type="button" variant="outline" size="icon" className="h-12 w-12 border-2 shrink-0" onClick={() => setFormData(prev => ({...prev, stockQuantity: '0'}))}>
+                              <X className="h-5 w-5 text-red-500"/>
+                          </Button>
+                        </div>
                       </div>
                     </div>
 
@@ -553,7 +559,15 @@ export default function AdminPage() {
                                     <p className="text-[12px] text-muted-foreground line-through">{product.originalPrice.toLocaleString()} DH</p>
                                   )}
                                 </div>
-                                <p className="text-[10px] font-bold px-2 py-1 bg-muted rounded shrink-0">Stock: {product.stockQuantity}</p>
+                                {product.stockQuantity > 0 ? (
+                                  <Badge variant="secondary" className="border-green-500/50 bg-green-50 text-green-700 hover:bg-green-100 font-medium">
+                                    En stock: {product.stockQuantity}
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="destructive" className="font-medium">
+                                    Épuisé
+                                  </Badge>
+                                )}
                               </div>
                             </CardContent>
                           </Card>
@@ -600,7 +614,15 @@ export default function AdminPage() {
                                     <p className="text-[12px] text-muted-foreground line-through">{product.originalPrice.toLocaleString()} DH</p>
                                   )}
                                 </div>
-                                <p className="text-[10px] font-bold px-2 py-1 bg-muted rounded shrink-0">Stock: {product.stockQuantity}</p>
+                                {product.stockQuantity > 0 ? (
+                                  <Badge variant="secondary" className="border-green-500/50 bg-green-50 text-green-700 hover:bg-green-100 font-medium">
+                                    En stock: {product.stockQuantity}
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="destructive" className="font-medium">
+                                    Épuisé
+                                  </Badge>
+                                )}
                               </div>
                           </CardContent>
                         </Card>
@@ -616,3 +638,4 @@ export default function AdminPage() {
     </div>
   );
 }
+
