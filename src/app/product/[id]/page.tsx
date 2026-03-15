@@ -9,7 +9,6 @@ import Image from 'next/image';
 import { ShieldCheck, Truck, RefreshCw, Star, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
-import { personalizedProductRecommendations } from '@/ai/flows/personalized-product-recommendations-flow';
 import { ProductCard } from '@/components/product/ProductCard';
 import { useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, query, collection, where, limit } from 'firebase/firestore';
@@ -26,8 +25,6 @@ export default function ProductPage() {
   const { id } = useParams();
   const db = useFirestore();
   const { addToCart } = useCart();
-  const [recommendations, setRecommendations] = useState<string[]>([]);
-  const [loadingRecs, setLoadingRecs] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   const productRef = useMemoFirebase(() => {
@@ -41,40 +38,23 @@ export default function ProductPage() {
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
-    async function fetchRecs() {
-      if (product) {
-        setLoadingRecs(true);
-        try {
-          const history = [product.name, product.categorySlug].filter((item): item is string => typeof item === 'string' && item.length > 0);
-          
-          const result = await personalizedProductRecommendations({
-            browsingHistory: history,
-            numRecommendations: 4
-          });
-          setRecommendations(result.recommendations);
-        } catch (e) {
-          // Silently fail on AI recommendation errors (e.g. quota exceeded)
-        } finally {
-          setLoadingRecs(false);
-        }
-      }
-    }
-    fetchRecs();
-  }, [product]);
-
   const recommendedProductsQuery = useMemoFirebase(() => {
-    if (!db || recommendations.length === 0) return null;
+    if (!db || !product?.categorySlug) return null;
     return query(
       collection(db, 'products'),
-      where('name', 'in', recommendations),
+      where('categorySlug', '==', product.categorySlug),
       where('status', '==', 'PUBLISHED'),
-      limit(4)
+      limit(5) // Fetch 5 to have extras if current product is included
     );
-  }, [db, recommendations]);
+  }, [db, product]);
 
   const { data: recommendedProductsData, isLoading: areRecsLoading } = useCollection(recommendedProductsQuery);
-  const recommendedProducts = (recommendedProductsData || []) as unknown as Product[];
+  
+  // Filter out the current product from the recommendations
+  const recommendedProducts = (recommendedProductsData || [])
+    .filter(p => p.id !== id)
+    .slice(0, 4) as unknown as Product[];
+
 
   if (isProductLoading) {
     return (
@@ -227,11 +207,11 @@ export default function ProductPage() {
             </div>
           </div>
 
-          {/* AI Recommendations Section */}
-          {(loadingRecs || areRecsLoading || recommendedProducts.length > 0) && (
+          {/* Related Products Section */}
+          {(areRecsLoading || recommendedProducts.length > 0) && (
             <div className="mt-16">
-              <h2 className="text-2xl font-black mb-8 border-b pb-4 italic">POURRAIENT VOUS <span className="text-primary">INTÉRESSER</span></h2>
-              {(loadingRecs || areRecsLoading) ? (
+              <h2 className="text-2xl font-black mb-8 border-b pb-4 italic">PRODUITS <span className="text-primary">SIMILAIRES</span></h2>
+              {areRecsLoading ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {Array(4).fill(0).map((_, i) => (
                     <div key={i} className="aspect-[3/4] bg-muted animate-pulse rounded-xl flex items-center justify-center">
