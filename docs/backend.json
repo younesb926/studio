@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -152,6 +153,10 @@
         "price": {
           "type": "number",
           "description": "The base selling price of the product."
+        },
+        "originalPrice": {
+          "type": "number",
+          "description": "The original, higher price of the product before a discount is applied. Used for display purposes to show a strikethrough price."
         },
         "discountPercentage": {
           "type": "number",

@@ -63,6 +63,7 @@ export default function AdminPage() {
     descriptionShort: '',
     descriptionDetailed: '',
     price: '',
+    originalPrice: '',
     categorySlug: '',
     stockQuantity: '10',
     imageUrl: '',
@@ -149,6 +150,7 @@ export default function AdminPage() {
           // Clean data from CSV
           const name = row.name?.trim();
           const priceStr = row.price?.toString().trim().replace(/[^\d.]/g, '');
+          const originalPriceStr = row.originalPrice?.toString().trim().replace(/[^\d.]/g, '');
           const categorySlug = row.categorySlug?.trim();
           const imageUrl = row.imageUrl?.trim();
           const stock = row.stock?.toString().trim();
@@ -174,6 +176,7 @@ export default function AdminPage() {
             descriptionShort: description ? description.substring(0, 80) : name,
             descriptionDetailed: description || name,
             price: parseFloat(priceStr),
+            originalPrice: originalPriceStr ? parseFloat(originalPriceStr) : null,
             stockQuantity: parseInt(stock) || 10,
             imageUrls: images.length > 0 ? images : [imageUrl],
             categorySlug: categorySlug,
@@ -233,6 +236,7 @@ export default function AdminPage() {
       descriptionShort: product.descriptionShort || '',
       descriptionDetailed: product.descriptionDetailed || '',
       price: product.price?.toString() || '',
+      originalPrice: product.originalPrice?.toString() || '',
       categorySlug: product.categorySlug || '',
       stockQuantity: product.stockQuantity?.toString() || '10',
       imageUrl: '',
@@ -261,6 +265,7 @@ export default function AdminPage() {
       descriptionShort: '',
       descriptionDetailed: '',
       price: '',
+      originalPrice: '',
       categorySlug: '',
       stockQuantity: '10',
       imageUrl: '',
@@ -288,6 +293,8 @@ export default function AdminPage() {
     const finalImages = formData.imageUrls.length > 0 
       ? formData.imageUrls 
       : [formData.imageUrl || 'https://picsum.photos/seed/default/500/500'];
+      
+    const originalPriceValue = formData.originalPrice ? parseFloat(formData.originalPrice) : null;
 
     const dataToSave = {
       name: formData.name,
@@ -295,6 +302,7 @@ export default function AdminPage() {
       descriptionShort: formData.descriptionShort || formData.name.substring(0, 50),
       descriptionDetailed: formData.descriptionDetailed,
       price: parseFloat(formData.price),
+      originalPrice: originalPriceValue,
       stockQuantity: parseInt(formData.stockQuantity),
       imageUrls: finalImages,
       categorySlug: formData.categorySlug,
@@ -436,8 +444,19 @@ export default function AdminPage() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="price" className="text-xs font-black uppercase">Prix (DH)</Label>
-                        <Input id="price" type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="h-12 border-2" required />
+                        <Label htmlFor="stockQuantity" className="text-xs font-black uppercase">Quantité en Stock</Label>
+                        <Input id="stockQuantity" type="number" value={formData.stockQuantity} onChange={(e) => setFormData({...formData, stockQuantity: e.target.value})} className="h-12 border-2" required />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="price" className="text-xs font-black uppercase">Prix de Vente (DH)</Label>
+                        <Input id="price" type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="h-12 border-2" required placeholder="Ex: 2299" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="originalPrice" className="text-xs font-black uppercase">Prix Barré (Optionnel)</Label>
+                        <Input id="originalPrice" type="number" value={formData.originalPrice || ''} onChange={(e) => setFormData({...formData, originalPrice: e.target.value})} className="h-12 border-2" placeholder="Ex: 2999" />
                       </div>
                     </div>
 
@@ -481,7 +500,7 @@ export default function AdminPage() {
                           Annuler
                         </Button>
                       )}
-                      <Button type="submit" className="flex-[2] h-12 bg-primary hover:bg-secondary text-white font-black gap-2 shadow-md rounded-lg transition-all" disabled={loading}>
+                      <Button type="submit" className="flex-[2] h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-black gap-2 shadow-md rounded-lg transition-all" disabled={loading}>
                         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : editingProductId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                         {editingProductId ? "METTRE À JOUR" : "PUBLIER LE PRODUIT"}
                       </Button>
@@ -527,9 +546,14 @@ export default function AdminPage() {
                             </div>
                             <CardContent className="p-4">
                               <h3 className="font-bold text-sm line-clamp-2 mb-3 h-10">{product.name}</h3>
-                              <div className="flex items-center justify-between">
-                                <p className="text-primary font-black">{product.price.toLocaleString()} DH</p>
-                                <p className="text-[10px] font-bold px-2 py-1 bg-muted rounded">Stock: {product.stockQuantity}</p>
+                              <div className="flex items-baseline justify-between gap-2">
+                                <div className="flex items-baseline gap-2 flex-wrap">
+                                  <p className="text-primary font-black">{product.price.toLocaleString()} DH</p>
+                                  {product.originalPrice && (
+                                    <p className="text-[12px] text-muted-foreground line-through">{product.originalPrice.toLocaleString()} DH</p>
+                                  )}
+                                </div>
+                                <p className="text-[10px] font-bold px-2 py-1 bg-muted rounded shrink-0">Stock: {product.stockQuantity}</p>
                               </div>
                             </CardContent>
                           </Card>
@@ -569,10 +593,15 @@ export default function AdminPage() {
                           </div>
                           <CardContent className="p-4">
                             <h3 className="font-bold text-sm line-clamp-2 mb-3 h-10">{product.name}</h3>
-                            <div className="flex items-center justify-between">
-                              <p className="text-primary font-black">{product.price.toLocaleString()} DH</p>
-                              <p className="text-[10px] font-bold px-2 py-1 bg-muted rounded">Stock: {product.stockQuantity}</p>
-                            </div>
+                             <div className="flex items-baseline justify-between gap-2">
+                                <div className="flex items-baseline gap-2 flex-wrap">
+                                  <p className="text-primary font-black">{product.price.toLocaleString()} DH</p>
+                                  {product.originalPrice && (
+                                    <p className="text-[12px] text-muted-foreground line-through">{product.originalPrice.toLocaleString()} DH</p>
+                                  )}
+                                </div>
+                                <p className="text-[10px] font-bold px-2 py-1 bg-muted rounded shrink-0">Stock: {product.stockQuantity}</p>
+                              </div>
                           </CardContent>
                         </Card>
                       ))}
