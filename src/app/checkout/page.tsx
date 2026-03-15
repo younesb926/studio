@@ -38,7 +38,7 @@ export default function CheckoutPage() {
     setLoading(true);
 
     // Prepare WhatsApp Message
-    const whatsappNumber = "212608023714";
+    const whatsappNumber = "212710669953";
     const itemsList = items.map(item => `- ${item.quantity}x ${item.name} (${item.price.toLocaleString()} DH)`).join('\n');
     
     const message = `*طلب جديد - Sahraoui Store*\n\n` +
@@ -210,7 +210,7 @@ export default function CheckoutPage() {
                     Continuer mes achats
                   </Button>
                 </Link>
-                <Button variant="outline" className="w-full" onClick={() => window.open('https://wa.me/212608023714', '_blank')}>
+                <Button variant="outline" className="w-full" onClick={() => window.open('https://wa.me/212710669953', '_blank')}>
                   Contacter sur WhatsApp
                 </Button>
               </div>
