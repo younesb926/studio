@@ -13,7 +13,7 @@ import { useFirestore, useUser, useDoc, useMemoFirebase, useCollection, useAuth,
 import { collection, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Plus, Loader2, Lock, ShieldCheck, Image as ImageIcon, X, AlertCircle, Upload, Pencil, Trash2, ListFilter, FolderOpen, FileSpreadsheet } from 'lucide-react';
+import { Package, Plus, Loader2, Lock, ShieldCheck, Image as ImageIcon, X, AlertCircle, Upload, Pencil, Trash2, ListFilter, FolderOpen, FileSpreadsheet, KeyRound } from 'lucide-react';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { uploadImage } from '@/app/actions/upload-image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -35,6 +35,7 @@ export default function AdminPage() {
   const [isImporting, setIsImporting] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("add");
+  const [adminPassword, setAdminPassword] = useState('');
   
   // Check Admin Role
   const adminDocRef = useMemoFirebase(() => {
@@ -74,6 +75,16 @@ export default function AdminPage() {
 
   const handleClaimAdmin = () => {
     if (!db || !user) return;
+    
+    if (adminPassword !== 'Ayoub@sahraoui123') {
+      toast({
+        variant: "destructive",
+        title: "كلمة مرور خاطئة",
+        description: "يرجى إدخال الكلمة السرية الصحيحة للوصول.",
+      });
+      return;
+    }
+
     setClaimLoading(true);
     const ref = doc(db, 'roles_admin', user.uid);
     setDocumentNonBlocking(ref, { 
@@ -83,8 +94,8 @@ export default function AdminPage() {
     }, { merge: true });
     
     toast({
-      title: "Activation en cours",
-      description: "Vos droits d'administrateur sont en cours d'activation. Veuillez patienter 2 secondes.",
+      title: "تم تفعيل صلاحياتك",
+      description: "مرحباً بك في لوحة الإدارة.",
     });
     
     setTimeout(() => setClaimLoading(false), 2000);
@@ -148,7 +159,6 @@ export default function AdminPage() {
         let errorCount = 0;
 
         for (const row of data) {
-          // Clean data from CSV
           const name = row.name?.trim();
           const priceStr = row.price?.toString().trim().replace(/[^\d.]/g, '');
           const originalPriceStr = row.originalPrice?.toString().trim().replace(/[^\d.]/g, '');
@@ -157,7 +167,6 @@ export default function AdminPage() {
           const stock = row.stock?.toString().trim();
           const description = row.description?.trim();
 
-          // Simple validation
           if (!name || !priceStr || !categorySlug || !imageUrl) {
             errorCount++;
             continue;
@@ -168,7 +177,6 @@ export default function AdminPage() {
             .replace(/[\s_-]+/g, '-')
             .replace(/^-+|-+$/g, '');
 
-          // Handle potential multiple images in one cell
           const images = imageUrl.split(/[;,]/).map((u: string) => u.trim()).filter((u: string) => u !== '');
 
           const dataToSave = {
@@ -328,7 +336,7 @@ export default function AdminPage() {
 
   if (isUserLoading || isAdminChecking) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <p className="mt-4 font-bold text-muted-foreground">Initialisation...</p>
       </div>
@@ -340,15 +348,15 @@ export default function AdminPage() {
       <div className="min-h-screen flex flex-col bg-muted/30">
         <Header />
         <main className="flex-1 flex items-center justify-center p-4">
-          <Card className="max-w-md w-full shadow-2xl">
+          <Card className="max-w-md w-full shadow-2xl border-none">
             <CardHeader className="text-center">
-              <Lock className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-              <CardTitle>Connexion requise</CardTitle>
+              <Lock className="h-12 w-12 mx-auto text-primary mb-4" />
+              <CardTitle className="text-2xl font-black">Connexion requise</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-center text-muted-foreground">Vous devez être connecté pour accéder à l'espace admin.</p>
-              <Button onClick={() => initiateAnonymousSignIn(auth)} className="w-full h-12 font-bold">
-                Se connecter anonymement
+              <Button onClick={() => initiateAnonymousSignIn(auth)} className="w-full h-14 font-black bg-primary text-white rounded-xl shadow-lg hover:bg-primary/90 transition-all">
+                SE CONNECTER
               </Button>
             </CardContent>
           </Card>
@@ -362,16 +370,34 @@ export default function AdminPage() {
       <div className="min-h-screen flex flex-col bg-muted/30">
         <Header />
         <main className="flex-1 flex items-center justify-center p-4">
-          <Card className="max-w-md w-full border-primary/20 shadow-2xl">
+          <Card className="max-w-md w-full border-none shadow-2xl overflow-hidden rounded-2xl">
+            <div className="bg-primary h-2 w-full" />
             <CardHeader className="text-center pb-2">
               <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                 <ShieldCheck className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle className="text-2xl font-black">Mode Administrateur</CardTitle>
+              <CardTitle className="text-2xl font-black">Espace Sécurisé</CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">Veuillez saisir votre code d'accès administrateur</p>
             </CardHeader>
-            <CardContent className="text-center space-y-6 pt-4">
-              <Button onClick={handleClaimAdmin} className="w-full h-14 text-lg font-black bg-primary text-white rounded-xl shadow-lg" disabled={claimLoading}>
-                {claimLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : "ACTIVER MON ACCÈS ADMIN"}
+            <CardContent className="space-y-6 pt-4">
+              <div className="space-y-2">
+                <div className="relative">
+                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input 
+                    type="password" 
+                    placeholder="Code d'accès" 
+                    className="h-12 pl-10 border-2 font-medium focus:border-primary transition-all rounded-xl"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                  />
+                </div>
+              </div>
+              <Button 
+                onClick={handleClaimAdmin} 
+                className="w-full h-14 text-lg font-black bg-primary text-white rounded-xl shadow-lg hover:shadow-primary/20 transition-all" 
+                disabled={claimLoading}
+              >
+                {claimLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : "VÉRIFIER ET ACTIVER"}
               </Button>
             </CardContent>
           </Card>
@@ -388,10 +414,10 @@ export default function AdminPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
             <div className="flex flex-col md:flex-row items-center justify-center gap-4">
               <TabsList className="bg-white border p-1 rounded-xl h-14 shadow-sm">
-                <TabsTrigger value="add" className="rounded-lg px-8 font-bold data-[state=active]:bg-primary data-[state=active]:text-secondary">
+                <TabsTrigger value="add" className="rounded-lg px-8 font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
                   {editingProductId ? "Modifier le produit" : "Ajouter un produit"}
                 </TabsTrigger>
-                <TabsTrigger value="list" className="rounded-lg px-8 font-bold data-[state=active]:bg-primary data-[state=active]:text-secondary">
+                <TabsTrigger value="list" className="rounded-lg px-8 font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
                   Gérer le stock
                 </TabsTrigger>
               </TabsList>
@@ -411,7 +437,7 @@ export default function AdminPage() {
             </div>
 
             <TabsContent value="add">
-              <Card className="shadow-2xl border-t-8 border-t-primary rounded-2xl overflow-hidden max-w-2xl mx-auto">
+              <Card className="shadow-2xl border-t-8 border-t-primary rounded-2xl overflow-hidden max-w-2xl mx-auto border-none">
                 <CardHeader className="flex flex-row items-center gap-4 bg-white border-b p-6">
                   <div className="p-3 bg-primary/10 rounded-xl">
                     <Package className="h-6 w-6 text-primary" />
@@ -427,14 +453,14 @@ export default function AdminPage() {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
                       <Label htmlFor="name" className="text-xs font-black uppercase">Nom du produit</Label>
-                      <Input id="name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Samsung Galaxy S24 Ultra" className="h-12 border-2 font-medium" required />
+                      <Input id="name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Samsung Galaxy S24 Ultra" className="h-12 border-2 font-medium rounded-lg" required />
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label htmlFor="categorySlug" className="text-xs font-black uppercase">Catégorie</Label>
                         <Select onValueChange={(val) => setFormData({...formData, categorySlug: val})} value={formData.categorySlug}>
-                          <SelectTrigger className="h-12 border-2">
+                          <SelectTrigger className="h-12 border-2 rounded-lg">
                             <SelectValue placeholder="Choisir..." />
                           </SelectTrigger>
                           <SelectContent>
@@ -447,8 +473,8 @@ export default function AdminPage() {
                       <div className="space-y-2">
                         <Label htmlFor="stockQuantity" className="text-xs font-black uppercase">Quantité en Stock</Label>
                         <div className="flex items-center gap-2">
-                          <Input id="stockQuantity" type="number" value={formData.stockQuantity} onChange={(e) => setFormData({...formData, stockQuantity: e.target.value})} className="h-12 border-2" required />
-                          <Button type="button" variant="outline" size="icon" className="h-12 w-12 border-2 shrink-0" onClick={() => setFormData(prev => ({...prev, stockQuantity: '0'}))}>
+                          <Input id="stockQuantity" type="number" value={formData.stockQuantity} onChange={(e) => setFormData({...formData, stockQuantity: e.target.value})} className="h-12 border-2 rounded-lg" required />
+                          <Button type="button" variant="outline" size="icon" className="h-12 w-12 border-2 shrink-0 rounded-lg" onClick={() => setFormData(prev => ({...prev, stockQuantity: '0'}))}>
                               <X className="h-5 w-5 text-red-500"/>
                           </Button>
                         </div>
@@ -458,11 +484,11 @@ export default function AdminPage() {
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label htmlFor="price" className="text-xs font-black uppercase">Prix de Vente (DH)</Label>
-                        <Input id="price" type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="h-12 border-2" required placeholder="Ex: 2299" />
+                        <Input id="price" type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="h-12 border-2 rounded-lg" required placeholder="Ex: 2299" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="originalPrice" className="text-xs font-black uppercase">Prix Barré (Optionnel)</Label>
-                        <Input id="originalPrice" type="number" value={formData.originalPrice || ''} onChange={(e) => setFormData({...formData, originalPrice: e.target.value})} className="h-12 border-2" placeholder="Ex: 2999" />
+                        <Input id="originalPrice" type="number" value={formData.originalPrice || ''} onChange={(e) => setFormData({...formData, originalPrice: e.target.value})} className="h-12 border-2 rounded-lg" placeholder="Ex: 2999" />
                       </div>
                     </div>
 
@@ -470,21 +496,21 @@ export default function AdminPage() {
                       <Label className="text-xs font-black uppercase">Images du produit</Label>
                       <div className="grid grid-cols-1 gap-4">
                         <input type="file" accept="image/*" multiple className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
-                        <Button type="button" variant="outline" className="h-12 gap-2 border-dashed border-2 font-bold" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                        <Button type="button" variant="outline" className="h-12 gap-2 border-dashed border-2 font-bold rounded-lg" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                           {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                           {isUploading ? "Téléchargement..." : "Choisir des images (plusieurs possible)"}
                         </Button>
 
                         <div className="flex gap-2">
-                          <Input value={formData.imageUrl} onChange={(e) => setFormData({...formData, imageUrl: e.target.value})} placeholder="Ou coller le lien de l'image..." className="h-12 border-2" />
-                          <Button type="button" onClick={handleAddImageUrl} variant="secondary" className="h-12 px-6 font-bold">Ajouter</Button>
+                          <Input value={formData.imageUrl} onChange={(e) => setFormData({...formData, imageUrl: e.target.value})} placeholder="Ou coller le lien de l'image..." className="h-12 border-2 rounded-lg" />
+                          <Button type="button" onClick={handleAddImageUrl} variant="secondary" className="h-12 px-6 font-bold rounded-lg">Ajouter</Button>
                         </div>
                       </div>
                       
                       {formData.imageUrls.length > 0 && (
                         <div className="grid grid-cols-4 gap-2 mt-4">
                           {formData.imageUrls.map((url, idx) => (
-                            <div key={idx} className="relative aspect-square rounded-lg border-2 overflow-hidden bg-muted group">
+                            <div key={url} className="relative aspect-square rounded-lg border-2 overflow-hidden bg-muted group">
                               <img src={url} alt="Preview" className="w-full h-full object-cover" />
                               <button type="button" onClick={() => removeImageUrl(idx)} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                                 <X className="h-3 w-3" />
@@ -497,16 +523,16 @@ export default function AdminPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="descDetailed" className="text-xs font-black uppercase">Description</Label>
-                      <Textarea id="descDetailed" value={formData.descriptionDetailed} onChange={(e) => setFormData({...formData, descriptionDetailed: e.target.value})} className="min-h-[120px] border-2" required />
+                      <Textarea id="descDetailed" value={formData.descriptionDetailed} onChange={(e) => setFormData({...formData, descriptionDetailed: e.target.value})} className="min-h-[120px] border-2 rounded-lg" required />
                     </div>
 
                     <div className="flex gap-4">
                       {editingProductId && (
-                        <Button type="button" variant="outline" onClick={resetForm} className="flex-1 h-12 font-bold">
+                        <Button type="button" variant="outline" onClick={resetForm} className="flex-1 h-12 font-bold rounded-lg">
                           Annuler
                         </Button>
                       )}
-                      <Button type="submit" className="flex-[2] h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-black gap-2 shadow-md rounded-lg transition-all" disabled={loading}>
+                      <Button type="submit" className="flex-[2] h-12 bg-primary hover:bg-primary/90 text-white font-black gap-2 shadow-md rounded-lg transition-all" disabled={loading}>
                         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : editingProductId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                         {editingProductId ? "METTRE À JOUR" : "PUBLIER LE PRODUIT"}
                       </Button>
@@ -536,16 +562,16 @@ export default function AdminPage() {
                       <Separator />
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         {categoryProducts.map((product) => (
-                          <Card key={product.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-all border group relative">
+                          <Card key={product.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-all border group relative rounded-xl bg-white border-none">
                             <div className="relative aspect-square bg-muted">
                               {product.imageUrls?.[0] && (
                                 <Image src={product.imageUrls[0]} alt={product.name} fill className="object-cover" unoptimized />
                               )}
                               <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <Button size="icon" variant="secondary" className="bg-white/90 hover:bg-white shadow-md" onClick={() => handleEditClick(product)}>
+                                <Button size="icon" variant="secondary" className="bg-white/90 hover:bg-white shadow-md rounded-lg" onClick={() => handleEditClick(product)}>
                                   <Pencil className="h-4 w-4" />
                                 </Button>
-                                <Button size="icon" variant="destructive" className="shadow-md" onClick={() => handleDeleteClick(product.id)}>
+                                <Button size="icon" variant="destructive" className="shadow-md rounded-lg" onClick={() => handleDeleteClick(product.id)}>
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
@@ -577,7 +603,6 @@ export default function AdminPage() {
                   );
                 })}
 
-                {/* Handle products without category or with unknown category */}
                 {products?.some(p => !displayCategories.find(c => c.slug === p.categorySlug)) && (
                    <div className="space-y-4">
                     <div className="flex items-center gap-3 px-2">
@@ -591,16 +616,16 @@ export default function AdminPage() {
                     <Separator />
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                       {products?.filter(p => !displayCategories.find(c => c.slug === p.categorySlug)).map((product) => (
-                        <Card key={product.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-all border group relative">
+                        <Card key={product.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-all border group relative rounded-xl bg-white border-none">
                           <div className="relative aspect-square bg-muted">
                             {product.imageUrls?.[0] && (
                               <Image src={product.imageUrls[0]} alt={product.name} fill className="object-cover" unoptimized />
                             )}
                             <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                              <Button size="icon" variant="secondary" className="bg-white/90 hover:bg-white shadow-md" onClick={() => handleEditClick(product)}>
+                              <Button size="icon" variant="secondary" className="bg-white/90 hover:bg-white shadow-md rounded-lg" onClick={() => handleEditClick(product)}>
                                 <Pencil className="h-4 w-4" />
                               </Button>
-                              <Button size="icon" variant="destructive" className="shadow-md" onClick={() => handleDeleteClick(product.id)}>
+                              <Button size="icon" variant="destructive" className="shadow-md rounded-lg" onClick={() => handleDeleteClick(product.id)}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
@@ -638,4 +663,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
