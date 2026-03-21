@@ -10,6 +10,7 @@ export const categories: Category[] = [
   { id: '6', name: 'Chauffe-eau', slug: 'chauffe-eau', iconId: 'cat-chauffe-eau' },
   { id: '7', name: 'Robot', slug: 'robot', iconId: 'cat-robot' },
   { id: '8', name: 'Scooter', slug: 'scooter', iconId: 'cat-scooter' },
+  { id: '9', name: 'Monitor', slug: 'monitor', iconId: 'cat-monitor' },
 ];
 
 export const products: Product[] = [

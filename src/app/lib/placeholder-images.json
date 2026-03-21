@@ -50,6 +50,12 @@
       "imageHint": "electric scooter"
     },
     {
+      "id": "cat-monitor",
+      "description": "Monitor",
+      "imageUrl": "https://picsum.photos/seed/monitor1/500/500",
+      "imageHint": "computer monitor"
+    },
+    {
       "id": "hero-promo",
       "description": "Offre Exceptionnelle",
       "imageUrl": "https://www.electromart.com.gh/wp-content/uploads/2025/01/TV.jpg",
