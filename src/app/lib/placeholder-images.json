@@ -38,6 +38,18 @@
       "imageHint": "electric water heater"
     },
     {
+      "id": "cat-robot",
+      "description": "Robot",
+      "imageUrl": "https://picsum.photos/seed/robot1/500/500",
+      "imageHint": "tech robot"
+    },
+    {
+      "id": "cat-scooter",
+      "description": "Scooter",
+      "imageUrl": "https://picsum.photos/seed/scoot1/500/500",
+      "imageHint": "electric scooter"
+    },
+    {
       "id": "hero-promo",
       "description": "Offre Exceptionnelle",
       "imageUrl": "https://www.electromart.com.gh/wp-content/uploads/2025/01/TV.jpg",

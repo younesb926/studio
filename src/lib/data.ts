@@ -8,6 +8,8 @@ export const categories: Category[] = [
   { id: '4', name: 'Télévisions', slug: 'televisions', iconId: 'cat-televisions' },
   { id: '5', name: 'Climatiseurs', slug: 'climatiseurs', iconId: 'cat-climatiseurs' },
   { id: '6', name: 'Chauffe-eau', slug: 'chauffe-eau', iconId: 'cat-chauffe-eau' },
+  { id: '7', name: 'Robot', slug: 'robot', iconId: 'cat-robot' },
+  { id: '8', name: 'Scooter', slug: 'scooter', iconId: 'cat-scooter' },
 ];
 
 export const products: Product[] = [
@@ -18,9 +20,9 @@ export const products: Product[] = [
     description: 'Une qualité d\'image exceptionnelle with des couleurs éclatantes.',
     price: 8990,
     originalPrice: 10500,
-    categoryId: '4',
-    imageId: 'prod-3',
-    stock: 8,
+    categorySlug: 'televisions',
+    imageUrls: ['https://electromall.ma/wp-content/uploads/2024/09/Tv-SAMSUNG-QLED-QA85Q60DAU-85P.webp'],
+    stockQuantity: 8,
     isFeatured: true
   },
   {
@@ -30,9 +32,9 @@ export const products: Product[] = [
     description: 'Le café parfait en une seule touche, design moderne et compact.',
     price: 1290,
     originalPrice: 1590,
-    categoryId: '1',
-    imageId: 'prod-4',
-    stock: 25,
+    categorySlug: 'petit-electromenager',
+    imageUrls: ['https://images.unsplash.com/photo-1637029436347-e33bf98a5412?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjb2ZmZWUlMjBtYWNoaW5lfGVufDB8fHx8MTc3MTg5MTYzMHww&ixlib=rb-4.1.0&q=80&w=1080'],
+    stockQuantity: 25,
     isFeatured: true
   },
   {
@@ -41,9 +43,9 @@ export const products: Product[] = [
     slug: 'lg-instaview-fridge',
     description: 'Toquez deux fois et voyez l\'intérieur sans ouvrir la porte.',
     price: 18500,
-    categoryId: '2',
-    imageId: 'prod-5',
-    stock: 3,
+    categorySlug: 'gros-electromenager',
+    imageUrls: ['https://picsum.photos/seed/fridge-lg-98/500/500'],
+    stockQuantity: 3,
     isFeatured: true
   },
   {
@@ -52,9 +54,9 @@ export const products: Product[] = [
     slug: 'samsung-windfree-12k',
     description: 'Rafraîchissement sans courants d\'air froids désagréables.',
     price: 5490,
-    categoryId: '5',
-    imageId: 'prod-6',
-    stock: 15,
+    categorySlug: 'climatiseurs',
+    imageUrls: ['https://picsum.photos/seed/ac-samsung-87/500/500'],
+    stockQuantity: 15,
     isFeatured: true
   }
 ];
