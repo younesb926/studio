@@ -13,7 +13,7 @@ import { useFirestore, useUser, useDoc, useMemoFirebase, useCollection, useAuth,
 import { collection, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Plus, Loader2, Lock, ShieldCheck, Image as ImageIcon, X, AlertCircle, Upload, Pencil, Trash2, ListFilter, FolderOpen, FileSpreadsheet, KeyRound } from 'lucide-react';
+import { Package, Plus, Loader2, Lock, ShieldCheck, Image as ImageIcon, X, AlertCircle, Upload, Pencil, Trash2, ListFilter, FolderOpen, FileSpreadsheet, KeyRound, FolderPlus } from 'lucide-react';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { uploadImage } from '@/app/actions/upload-image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,6 +21,7 @@ import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 import Papa from 'papaparse';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 
 export default function AdminPage() {
   const db = useFirestore();
@@ -37,6 +38,11 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("add");
   const [adminPassword, setAdminPassword] = useState('');
   
+  // Category Dialog State
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [categoryLoading, setCategoryLoading] = useState(false);
+
   // Check Admin Role
   const adminDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -99,6 +105,45 @@ export default function AdminPage() {
     });
     
     setTimeout(() => setClaimLoading(false), 2000);
+  };
+
+  const handleAddCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!db || !newCategoryName.trim()) return;
+
+    setCategoryLoading(true);
+    const slug = newCategoryName.toLowerCase().trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    const categoriesRef = collection(db, 'categories');
+    const newCatData = {
+      name: newCategoryName.trim(),
+      slug: slug,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      description: `Produits de la catégorie ${newCategoryName.trim()}`,
+      imageUrl: 'https://picsum.photos/seed/cat/200/200'
+    };
+
+    try {
+      addDocumentNonBlocking(categoriesRef, newCatData);
+      toast({
+        title: "Catégorie ajoutée",
+        description: `La catégorie "${newCategoryName}" a été créée avec succès.`,
+      });
+      setNewCategoryName('');
+      setIsCategoryDialogOpen(false);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'ajouter la catégorie.",
+      });
+    } finally {
+      setCategoryLoading(false);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -459,16 +504,50 @@ export default function AdminPage() {
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label htmlFor="categorySlug" className="text-xs font-black uppercase">Catégorie</Label>
-                        <Select onValueChange={(val) => setFormData({...formData, categorySlug: val})} value={formData.categorySlug}>
-                          <SelectTrigger className="h-12 border-2 rounded-lg">
-                            <SelectValue placeholder="Choisir..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {displayCategories.map(cat => (
-                              <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <Select onValueChange={(val) => setFormData({...formData, categorySlug: val})} value={formData.categorySlug}>
+                              <SelectTrigger className="h-12 border-2 rounded-lg">
+                                <SelectValue placeholder="Choisir..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {displayCategories.map(cat => (
+                                  <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+                            <DialogTrigger asChild>
+                              <Button type="button" variant="outline" size="icon" className="h-12 w-12 border-2 rounded-lg shrink-0">
+                                <FolderPlus className="h-5 w-5 text-primary" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="rounded-2xl">
+                              <DialogHeader>
+                                <DialogTitle className="font-black italic">AJOUTER UNE <span className="text-primary">CATÉGORIE</span></DialogTitle>
+                              </DialogHeader>
+                              <div className="py-4 space-y-4">
+                                <div className="space-y-2">
+                                  <Label htmlFor="newCategoryName" className="text-xs font-black uppercase">Nom de la catégorie</Label>
+                                  <Input 
+                                    id="newCategoryName" 
+                                    value={newCategoryName} 
+                                    onChange={(e) => setNewCategoryName(e.target.value)} 
+                                    placeholder="Ex: Gaming, Photo..." 
+                                    className="h-12 border-2 font-medium"
+                                  />
+                                </div>
+                              </div>
+                              <DialogFooter>
+                                <Button onClick={handleAddCategory} disabled={categoryLoading} className="w-full h-12 font-black bg-primary text-white">
+                                  {categoryLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "CRÉER LA CATÉGORIE"}
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="stockQuantity" className="text-xs font-black uppercase">Quantité en Stock</Label>
@@ -498,7 +577,7 @@ export default function AdminPage() {
                         <input type="file" accept="image/*" multiple className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
                         <Button type="button" variant="outline" className="h-12 gap-2 border-dashed border-2 font-bold rounded-lg" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                           {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                          {isUploading ? "Téléchargement..." : "Choisir des images (plusieurs possible)"}
+                          {isUploading ? "Téléchargement..." : "Choisير des images (plusieurs possible)"}
                         </Button>
 
                         <div className="flex gap-2">
