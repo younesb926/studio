@@ -56,6 +56,12 @@
       "imageHint": "computer monitor"
     },
     {
+      "id": "cat-accessoires",
+      "description": "Accessoires",
+      "imageUrl": "https://picsum.photos/seed/accessories/500/500",
+      "imageHint": "tech accessories"
+    },
+    {
       "id": "hero-promo",
       "description": "Offre Exceptionnelle",
       "imageUrl": "https://www.electromart.com.gh/wp-content/uploads/2025/01/TV.jpg",

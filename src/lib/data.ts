@@ -11,6 +11,7 @@ export const categories: Category[] = [
   { id: '7', name: 'Robot', slug: 'robot', iconId: 'cat-robot' },
   { id: '8', name: 'Scooter', slug: 'scooter', iconId: 'cat-scooter' },
   { id: '9', name: 'Monitor', slug: 'monitor', iconId: 'cat-monitor' },
+  { id: '10', name: 'Accessoires', slug: 'accessoires', iconId: 'cat-accessoires' },
 ];
 
 export const products: Product[] = [
