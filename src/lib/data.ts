@@ -2,16 +2,16 @@
 import { Category, Product } from './types';
 
 export const categories: Category[] = [
-  { id: '1', name: 'Petit électroménager', slug: 'petit-electromenager', iconId: 'cat-petit-electro' },
-  { id: '2', name: 'Gros électroménager', slug: 'gros-electromenager', iconId: 'cat-gros-electro' },
-  { id: '3', name: 'Informatique', slug: 'informatique', iconId: 'cat-informatique' },
-  { id: '4', name: 'Télévisions', slug: 'televisions', iconId: 'cat-televisions' },
-  { id: '5', name: 'Climatiseurs', slug: 'climatiseurs', iconId: 'cat-climatiseurs' },
-  { id: '6', name: 'Chauffe-eau', slug: 'chauffe-eau', iconId: 'cat-chauffe-eau' },
-  { id: '7', name: 'Robot', slug: 'robot', iconId: 'cat-robot' },
-  { id: '8', name: 'Scooter', slug: 'scooter', iconId: 'cat-scooter' },
-  { id: '9', name: 'Monitor', slug: 'monitor', iconId: 'cat-monitor' },
-  { id: '10', name: 'Accessoires', slug: 'accessoires', iconId: 'cat-accessoires' },
+  { id: '1', name: 'Informatique', slug: 'informatique', iconId: 'cat-informatique' },
+  { id: '2', name: 'Télévisions', slug: 'televisions', iconId: 'cat-televisions' },
+  { id: '3', name: 'Robot', slug: 'robot', iconId: 'cat-robot' },
+  { id: '4', name: 'Scooter', slug: 'scooter', iconId: 'cat-scooter' },
+  { id: '5', name: 'Monitor', slug: 'monitor', iconId: 'cat-monitor' },
+  { id: '6', name: 'Accessoires', slug: 'accessoires', iconId: 'cat-accessoires' },
+  { id: '7', name: 'Gros électroménager', slug: 'gros-electromenager', iconId: 'cat-gros-electro' },
+  { id: '8', name: 'Petit électroménager', slug: 'petit-electromenager', iconId: 'cat-petit-electro' },
+  { id: '9', name: 'Climatiseurs', slug: 'climatiseurs', iconId: 'cat-climatiseurs' },
+  { id: '10', name: 'Chauffe-eau', slug: 'chauffe-eau', iconId: 'cat-chauffe-eau' },
 ];
 
 export const products: Product[] = [
