@@ -4,7 +4,7 @@ import { Category, Product } from './types';
 export const categories: Category[] = [
   { id: '1', name: 'Informatique', slug: 'informatique', iconId: 'cat-informatique' },
   { id: '2', name: 'Télévisions', slug: 'televisions', iconId: 'cat-televisions' },
-  { id: '3', name: 'Robot', slug: 'robot', iconId: 'cat-robot' },
+  { id: '3', name: 'Articles Ménager', slug: 'robot', iconId: 'cat-robot' },
   { id: '4', name: 'Scooter', slug: 'scooter', iconId: 'cat-scooter' },
   { id: '5', name: 'Monitor', slug: 'monitor', iconId: 'cat-monitor' },
   { id: '6', name: 'Accessoires', slug: 'accessoires', iconId: 'cat-accessoires' },
